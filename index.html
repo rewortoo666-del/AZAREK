@@ -179,7 +179,7 @@
             </div>
         </section>
 
-        <!-- Информационный контекстный баннер под выбранный канал -->
+        <!-- Информационный контекстный баннер -->
         <section class="px-4 pt-2.5 no-print">
             <div id="channel-info-banner" class="solid-card rounded-2xl p-3.5 shadow-sm relative overflow-hidden bg-gradient-to-br from-slate-900 to-sky-950 text-white transition-all duration-300">
                 <div class="relative z-10 space-y-1">
@@ -259,13 +259,13 @@
                     <p id="modal-desc" class="text-xs text-muted-contrast mt-1 leading-relaxed"></p>
                 </div>
 
-                <!-- Блок для опта: градации цены -->
+                <!-- Градации оптовых цен -->
                 <div id="modal-tiers-wrapper" class="space-y-2 text-xs">
                     <span class="font-bold text-[11px] text-muted-contrast uppercase tracking-wider">Градация оптовых цен:</span>
                     <div class="solid-card-sub rounded-xl p-3 grid grid-cols-3 gap-2 text-center" id="modal-tiers-container"></div>
                 </div>
 
-                <!-- Блок ползунка количества -->
+                <!-- Блок количества -->
                 <div class="solid-card-sub rounded-2xl p-4 space-y-3" id="quantity-control-card">
                     <div class="flex justify-between items-center">
                         <div>
@@ -326,7 +326,7 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО: ОФОРМЛЕНИЕ ЗАКАЗА (С ВЫБОРОМ ОПЛАТЫ И ИНН) -->
+        <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ ЗАКАЗА -->
         <div id="checkout-form" class="fixed inset-0 z-50 bg-black/80 flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="w-full max-w-md solid-card rounded-t-3xl p-5 pb-8 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto transform translate-y-full transition-transform duration-300" id="checkout-sheet">
                 <div class="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
@@ -343,15 +343,15 @@
                 <div id="checkout-cart-items" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
 
                 <div class="space-y-3 text-xs">
-                    <!-- СЕЛЕКТОР ОПЛАТЫ: СБП vs СЧЕТ ИП/ООО -->
+                    <!-- СЕЛЕКТОР ОПЛАТЫ ПОД РЕКВИЗИТЫ ИЛЬИ -->
                     <div>
                         <label class="block font-bold text-high-contrast mb-1.5">Формат оплаты *</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="solid-card rounded-xl p-2.5 flex items-center gap-2 cursor-pointer border hover:border-sky-500 transition" id="label-pay-sbp">
                                 <input type="radio" name="pay_method" value="sbp" checked onchange="togglePayMethod('sbp')" class="text-sky-600">
                                 <div>
-                                    <p class="font-bold text-[11px] leading-tight text-high-contrast">⚡️ СБП / Карта</p>
-                                    <p class="text-[9px] text-muted-contrast">Без комиссии / Слив</p>
+                                    <p class="font-bold text-[11px] leading-tight text-high-contrast">⚡️ СБП / Альфа-Банк</p>
+                                    <p class="text-[9px] text-muted-contrast">Быстрый перевод / Слив</p>
                                 </div>
                             </label>
                             <label class="solid-card rounded-xl p-2.5 flex items-center gap-2 cursor-pointer border hover:border-sky-500 transition" id="label-pay-invoice">
@@ -364,7 +364,7 @@
                         </div>
                     </div>
 
-                    <!-- Поле ИНН (появляется только если выбран официальный счёт) -->
+                    <!-- Поле ИНН -->
                     <div id="inn-container" class="hidden">
                         <label class="block font-bold text-high-contrast mb-1">ИНН компании или ИП *</label>
                         <input type="text" id="buyer-inn" placeholder="10 или 12 цифр ИНН для счёта" maxlength="12"
@@ -383,7 +383,7 @@
                     </div>
                     <div>
                         <label class="block font-bold text-high-contrast mb-1">Контакт в Telegram или Телефон *</label>
-                        <input type="text" id="contacts" placeholder="@username или +7 (999) 000-00-00"
+                        <input type="text" id="contacts" placeholder="@username или +79104943524"
                             class="w-full solid-input rounded-xl px-3.5 py-2.5 outline-none transition font-medium">
                     </div>
                     <div class="no-print">
@@ -401,7 +401,7 @@
                 <div class="solid-card-sub rounded-2xl p-3.5 flex justify-between items-center text-xs">
                     <div>
                         <span class="font-bold text-high-contrast block">Итого к оплате:</span>
-                        <span class="text-[10px] text-muted-contrast" id="checkout-note-label">Прямой перевод по СБП после подтверждения</span>
+                        <span class="text-[10px] text-muted-contrast" id="checkout-note-label">Перевод по СБП на Альфа-Банк Ильи (+79104943524)</span>
                     </div>
                     <span class="font-black text-base text-sky-600 dark:text-sky-400" id="checkout-total">0 ₽</span>
                 </div>
@@ -455,7 +455,7 @@
             showToast(isDarkTheme ? "Тёмная тема AZAREK" : "Светлая тема AZAREK", isDarkTheme ? "🌙" : "☀️");
         }
 
-        // БАЗА ТОВАРОВ (ОСНОВНОЙ КАНАЛ vs КАНАЛ СЛИВА)
+        // БАЗА ТОВАРОВ
         const allProductsData = [
             // ================= ОСНОВНОЙ КАНАЛ (AZAREK ОПТ) =================
             {
@@ -597,9 +597,9 @@
             }
         ];
 
-        let currentChannel = 'main'; // 'main' | 'sliv'
+        let currentChannel = 'main';
         let currentSubCat = 'all';
-        let currentPayMethod = 'sbp'; // 'sbp' | 'invoice'
+        let currentPayMethod = 'sbp';
         let favorites = [];
         let cart = {};
         let currentModalProductId = null;
@@ -614,7 +614,7 @@
                 noteLabel.innerText = 'Официальный счёт-спецификация в PDF для банка';
             } else {
                 innBox.classList.add('hidden');
-                noteLabel.innerText = 'Прямой перевод по СБП после подтверждения';
+                noteLabel.innerText = 'Перевод по СБП на Альфа-Банк Ильи (+79104943524)';
             }
             try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
         }
