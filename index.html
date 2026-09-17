@@ -3,182 +3,1127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Оптовый Каталог B2B</title>
-    <!-- Подключаем Telegram SDK -->
+    <title>AZAREK 2.0 | Оптовый каталог и Слив</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Подключаем Tailwind CSS для быстрого и красивого дизайна -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: var(--tg-theme-bg-color, #f3f4f6); color: var(--tg-theme-text-color, #1f2937); }
-        .tg-button { background-color: var(--tg-theme-button-color, #2563eb); color: var(--tg-theme-button-text-color, #ffffff); }
+        :root {
+            --bg-body: #F1F5F9;
+            --bg-surface: #FFFFFF;
+            --bg-sub: #E2E8F0;
+            --border-ui: #CBD5E1;
+            --text-main: #0F172A;
+            --text-sub: #475569;
+            --accent-brand: #0284C7;
+            --accent-cyan: #00B4D8;
+            --accent-primary: #0F172A;
+            --accent-contrast: #FFFFFF;
+        }
+
+        .dark-theme {
+            --bg-body: #090D16;
+            --bg-surface: #111827;
+            --bg-sub: #1E293B;
+            --border-ui: #334155;
+            --text-main: #F8FAFC;
+            --text-sub: #94A3B8;
+            --accent-brand: #38BDF8;
+            --accent-cyan: #00E5FF;
+            --accent-primary: #38BDF8;
+            --accent-contrast: #090D16;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .solid-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-ui);
+        }
+
+        .solid-card-sub {
+            background-color: var(--bg-sub);
+            border: 1px solid var(--border-ui);
+        }
+
+        .solid-input {
+            background-color: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border-ui);
+        }
+
+        .btn-azarek {
+            background: linear-gradient(135deg, #0284C7 0%, #00B4D8 100%);
+            color: #FFFFFF;
+        }
+
+        .btn-sliv {
+            background: linear-gradient(135deg, #EF4444 0%, #F97316 100%);
+            color: #FFFFFF;
+        }
+
+        .text-high-contrast {
+            color: var(--text-main) !important;
+        }
+
+        .text-muted-contrast {
+            color: var(--text-sub) !important;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #0284C7;
+            cursor: pointer;
+            border: 3px solid var(--bg-surface);
+            box-shadow: 0 2px 10px rgba(2, 132, 199, 0.45);
+            transition: transform 0.15s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb:active {
+            transform: scale(1.25);
+        }
+
+        .fly-particle {
+            position: fixed;
+            z-index: 100;
+            pointer-events: none;
+            transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media print {
+            body { background: white !important; color: black !important; }
+            header, #cart-bar, .no-print, #channel-switcher-bar, #product-modal, #lightbox-modal, #live-warehouse-ticker { display: none !important; }
+            #checkout-sheet { position: static !important; max-height: none !important; transform: none !important; box-shadow: none !important; }
+        }
     </style>
 </head>
-<body class="pb-24">
+<body class="flex justify-center min-h-screen antialiased selection:bg-sky-500 selection:text-white">
 
-    <!-- Шапка -->
-    <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
-        <h1 class="text-xl font-bold text-gray-800">Galk B2B | Опт</h1>
-    </header>
-
-    <!-- Сетка товаров (заполняется из JS) -->
-    <main class="p-4 grid grid-cols-2 gap-4" id="products-container">
-        <!-- Товары появятся здесь -->
-    </main>
-
-    <!-- Форма оформления заказа (скрыта по умолчанию) -->
-    <div id="checkout-form" class="hidden fixed inset-0 bg-white z-20 p-6 overflow-y-auto">
-        <h2 class="text-2xl font-bold mb-4">Оформление заказа</h2>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Название компании / ИП</label>
-                <input type="text" id="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 bg-gray-50 border" placeholder="ООО Ромашка">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Город и адрес доставки</label>
-                <input type="text" id="city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 bg-gray-50 border" placeholder="г. Москва, ул. Ленина...">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">ФИО и телефон</label>
-                <input type="text" id="contacts" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 bg-gray-50 border" placeholder="Иван, +7 999 000 00 00">
-            </div>
-        </div>
-        <div class="mt-6 flex gap-2">
-            <button onclick="hideCheckout()" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg font-bold">Назад</button>
-            <button onclick="sendOrderToBot()" class="w-2/3 tg-button p-3 rounded-lg font-bold shadow-lg">Отправить счет</button>
-        </div>
+    <!-- Toast уведомление -->
+    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2 flex items-center gap-2">
+        <span id="toast-icon">✅</span>
+        <span id="toast-text">Успешно</span>
     </div>
 
-    <!-- Плавающая корзина внизу -->
-    <div id="cart-bar" class="fixed bottom-0 w-full bg-white border-t p-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hidden z-10">
-        <div>
-            <p class="text-sm text-gray-500">Итого оптом:</p>
-            <p class="text-xl font-bold" id="total-price">0 ₽</p>
+    <!-- Lightbox фото -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl transition transform scale-95" onclick="event.stopPropagation()">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-800 text-white font-bold text-lg flex items-center justify-center">✕</button>
+    </div>
+
+    <div id="app-wrapper" class="w-full max-w-md bg-white dark:bg-slate-950 min-h-screen relative flex flex-col shadow-2xl pb-28 transition-colors duration-300">
+
+        <!-- Фирменная шапка с оригинальной аватаркой AZAREK 2.0 -->
+        <header class="sticky top-0 z-30 solid-card border-b px-4 py-3 flex items-center justify-between transition-colors duration-300">
+            <div class="flex items-center gap-2.5">
+                <div class="relative cursor-pointer select-none active:scale-95 transition" onclick="switchChannel('main')">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden shadow-md border border-sky-400/40 bg-slate-900 flex items-center justify-center">
+                        <img src="photo_2022-11-28_08-56-13.jpg" 
+                             alt="AZAREK 2.0" 
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=150&q=80';">
+                    </div>
+                    <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 text-white rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm text-[8px]">✓</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-black tracking-tight text-sm text-high-contrast" id="header-brand-title">AZAREK 2.0</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase border border-sky-500/20" id="header-brand-tag">ОПТ / ДРОП</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] font-bold text-muted-contrast">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        19 км МКАД • <span class="font-extrabold text-sky-600 dark:text-sky-400">8.3k сабов</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5">
+                <button onclick="toggleThemeMode()" id="theme-btn" class="w-8 h-8 rounded-xl solid-card-sub flex items-center justify-center font-bold active:scale-90 transition shadow-sm" title="Тема">
+                    🌙
+                </button>
+                <button onclick="openTrackerModal()" class="w-8 h-8 rounded-xl solid-card-sub flex items-center justify-center font-bold active:scale-90 transition shadow-sm" title="Трекинг ТК">
+                    🚚
+                </button>
+                <button onclick="redirectToManagerSupport()" class="px-3 py-1.5 rounded-xl btn-azarek font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+                    <span>Илья</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ГЛАВНЫЙ СЕЛЕКТОР: 2 ПЛАШКИ ПЕРЕКЛЮЧЕНИЯ КАНАЛОВ -->
+        <section id="channel-switcher-bar" class="px-4 pt-3 no-print">
+            <div class="solid-card rounded-2xl p-1.5 flex gap-1.5 shadow-sm bg-slate-200/70 dark:bg-slate-900 border border-slate-300 dark:border-slate-800">
+                <button onclick="switchChannel('main')" id="btn-tab-main" class="flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 shadow-md btn-azarek">
+                    <span>📦 Основной склад</span>
+                    <span class="text-[9px] bg-white/20 text-white font-bold px-1.5 py-0.5 rounded uppercase">Опт</span>
+                </button>
+                <button onclick="switchChannel('sliv')" id="btn-tab-sliv" class="flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 text-muted-contrast hover:text-rose-500">
+                    <span>🔥 Быстрый слив</span>
+                    <span class="text-[9px] bg-rose-500/10 text-rose-500 font-bold px-1.5 py-0.5 rounded uppercase">1 шт</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Информационный контекстный баннер под выбранный канал -->
+        <section class="px-4 pt-2.5 no-print">
+            <div id="channel-info-banner" class="solid-card rounded-2xl p-3.5 shadow-sm relative overflow-hidden bg-gradient-to-br from-slate-900 to-sky-950 text-white transition-all duration-300">
+                <div class="relative z-10 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span id="banner-badge" class="text-[9px] font-black uppercase tracking-widest bg-cyan-500 text-slate-950 px-2 py-0.5 rounded">Основной склад</span>
+                        <span id="banner-subbadge" class="text-[10px] text-cyan-300 font-bold">Опт от 5-10 шт • Динамический прайс</span>
+                    </div>
+                    <h2 id="banner-title" class="text-sm font-black leading-tight pt-0.5 text-white">Оптовый инструмент и наборы AZAREK</h2>
+                    <p id="banner-desc" class="text-[11px] text-slate-300 leading-snug">Цена падает автоматически при увеличении тиража. Проверка на брак 100%. Отгрузка с 19 км МКАД.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Поиск и фильтры -->
+        <section class="p-4 pb-2 space-y-2.5 no-print">
+            <div class="flex gap-2">
+                <div class="relative flex-grow">
+                    <input type="text" id="search" placeholder="Поиск товара по каталогу..." oninput="filterProducts()"
+                        class="w-full solid-input rounded-2xl pl-9 pr-3 py-2 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 transition shadow-sm font-medium">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <select id="sort-select" onchange="filterProducts()" class="solid-card rounded-2xl px-2.5 py-2 text-[11px] font-bold outline-none shadow-sm text-high-contrast">
+                    <option value="default">Сортировка</option>
+                    <option value="price_asc">Дешевле</option>
+                    <option value="price_desc">Дороже</option>
+                    <option value="stock_desc">По остатку</option>
+                </select>
+            </div>
+
+            <!-- Подфильтры категорий -->
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar py-0.5" id="subcategories-pills"></div>
+        </section>
+
+        <!-- Сетка товаров -->
+        <main class="p-4 pt-1 grid grid-cols-2 gap-3 flex-grow" id="products-container"></main>
+
+        <!-- Плавающий бар корзины -->
+        <div id="cart-bar" class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-[420px] bg-slate-950 text-white rounded-2xl p-3 px-4 flex items-center justify-between shadow-2xl opacity-0 pointer-events-none translate-y-4 transition-all duration-300 z-40 border border-slate-800 no-print">
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Спецификация:</p>
+                    <span class="text-[9px] text-cyan-400 font-bold" id="cart-items-count">0 поз.</span>
+                </div>
+                <p class="text-lg font-black leading-tight mt-0.5 text-white" id="total-price">0 ₽</p>
+            </div>
+            <button onclick="showCheckout()" class="btn-azarek px-5 py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-md transition active:scale-95 flex items-center gap-1.5">
+                <span>Оформить заказ</span>
+                <span>→</span>
+            </button>
         </div>
-        <button onclick="showCheckout()" class="tg-button px-6 py-3 rounded-lg font-bold shadow-md">Оформить</button>
+
+        <!-- МОДАЛЬНОЕ ОКНО ТОВАРА -->
+        <div id="product-modal" class="fixed inset-0 z-50 bg-black/80 flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+            <div class="w-full max-w-md solid-card rounded-t-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto transform translate-y-full transition-transform duration-300" id="product-sheet">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-2">
+                        <span id="modal-badge" class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20"></span>
+                        <span id="modal-stock" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="modal-stock-text">В наличии</span>
+                        </span>
+                    </div>
+                    <button onclick="closeProductModal()" class="w-8 h-8 rounded-full solid-card-sub text-high-contrast font-bold flex items-center justify-center">✕</button>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="relative w-full h-56 solid-card-sub rounded-2xl overflow-hidden cursor-zoom-in" onclick="openLightbox()">
+                        <img id="modal-main-img" src="" class="w-full h-full object-cover">
+                        <span class="absolute bottom-2.5 right-2.5 bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-lg pointer-events-none">🔍 Фото крупно</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 id="modal-title" class="text-base font-extrabold text-high-contrast leading-snug"></h2>
+                    <p id="modal-desc" class="text-xs text-muted-contrast mt-1 leading-relaxed"></p>
+                </div>
+
+                <!-- Блок для опта: градации цены -->
+                <div id="modal-tiers-wrapper" class="space-y-2 text-xs">
+                    <span class="font-bold text-[11px] text-muted-contrast uppercase tracking-wider">Градация оптовых цен:</span>
+                    <div class="solid-card-sub rounded-xl p-3 grid grid-cols-3 gap-2 text-center" id="modal-tiers-container"></div>
+                </div>
+
+                <!-- Блок ползунка количества -->
+                <div class="solid-card-sub rounded-2xl p-4 space-y-3" id="quantity-control-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold text-high-contrast block" id="slider-title-label">Количество:</span>
+                            <span class="text-[10px] text-muted-contrast" id="box-quantity-hint">Квант: 5 шт</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 solid-card px-3 py-1.5 rounded-xl shadow-sm">
+                            <input type="number" id="slider-number-input" class="w-16 text-center font-black text-high-contrast text-sm outline-none bg-transparent" oninput="onNumberInputChange(this.value)">
+                            <span class="text-xs font-bold text-muted-contrast">шт.</span>
+                        </div>
+                    </div>
+
+                    <input type="range" id="modal-slider" class="w-full bg-slate-300 dark:bg-slate-800 h-2 rounded-lg appearance-none outline-none cursor-pointer" oninput="onSliderChange(this.value)">
+                    <div class="flex gap-2 pt-1 overflow-x-auto hide-scrollbar" id="quick-preset-chips"></div>
+
+                    <div class="flex justify-between items-center text-[11px] text-muted-contrast font-semibold pt-2 border-t border-slate-200 dark:border-slate-800">
+                        <span>Цена за штуку: <b id="tier-unit-price" class="text-sky-600 dark:text-sky-400 font-bold"></b></span>
+                        <span class="text-high-contrast font-bold">Итого: <b id="slider-total-price" class="font-black text-sm"></b></span>
+                    </div>
+                </div>
+
+                <div id="modal-action-slot"></div>
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ТРЕКИНГА -->
+        <div id="tracker-modal" class="fixed inset-0 z-50 bg-black/80 flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300 no-print">
+            <div class="w-full max-w-md solid-card rounded-t-3xl p-5 space-y-4 shadow-2xl transform translate-y-full transition-transform duration-300" id="tracker-sheet">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h2 class="text-base font-black text-high-contrast">Отслеживание груза AZAREK</h2>
+                        <p class="text-[11px] text-muted-contrast">Склад: г. Москва, 19-й км МКАД, вл. 20, стр. 3</p>
+                    </div>
+                    <button onclick="closeTrackerModal()" class="w-8 h-8 rounded-full solid-card-sub text-high-contrast font-bold flex items-center justify-center">✕</button>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="track-input" placeholder="Номер заявки (например 529104)" class="flex-grow solid-input rounded-xl px-3.5 py-2.5 text-xs font-medium outline-none">
+                    <button onclick="checkOrderStatus()" class="px-4 py-2.5 btn-azarek rounded-xl font-bold text-xs shadow-sm transition active:scale-95">Найти</button>
+                </div>
+
+                <div id="tracker-result" class="hidden solid-card-sub rounded-2xl p-4 space-y-3 text-xs">
+                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+                        <span class="font-bold text-high-contrast" id="track-id-display">Заявка AZ-529104</span>
+                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">В сборке</span>
+                    </div>
+                    <div class="space-y-2 text-[11px] text-muted-contrast">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Склад 19-й км МКАД: Партия проверена на брак</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                            <span class="text-high-contrast font-semibold">Передача в ТК СДЭК / Деловые Линии / ПЭК / КИТ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО: ОФОРМЛЕНИЕ ЗАКАЗА (С ВЫБОРОМ ОПЛАТЫ И ИНН) -->
+        <div id="checkout-form" class="fixed inset-0 z-50 bg-black/80 flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="w-full max-w-md solid-card rounded-t-3xl p-5 pb-8 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto transform translate-y-full transition-transform duration-300" id="checkout-sheet">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h2 class="text-lg font-black text-high-contrast">Спецификация на отгрузку</h2>
+                        <p class="text-[11px] text-muted-contrast">Заказ сформируется и отправится менеджеру в Telegram</p>
+                    </div>
+                    <div class="flex items-center gap-2 no-print">
+                        <button onclick="clearCart()" class="text-xs font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg transition">Очистить</button>
+                        <button onclick="hideCheckout()" class="w-8 h-8 rounded-full solid-card-sub text-high-contrast font-bold flex items-center justify-center">✕</button>
+                    </div>
+                </div>
+
+                <div id="checkout-cart-items" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+
+                <div class="space-y-3 text-xs">
+                    <!-- СЕЛЕКТОР ОПЛАТЫ: СБП vs СЧЕТ ИП/ООО -->
+                    <div>
+                        <label class="block font-bold text-high-contrast mb-1.5">Формат оплаты *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="solid-card rounded-xl p-2.5 flex items-center gap-2 cursor-pointer border hover:border-sky-500 transition" id="label-pay-sbp">
+                                <input type="radio" name="pay_method" value="sbp" checked onchange="togglePayMethod('sbp')" class="text-sky-600">
+                                <div>
+                                    <p class="font-bold text-[11px] leading-tight text-high-contrast">⚡️ СБП / Карта</p>
+                                    <p class="text-[9px] text-muted-contrast">Без комиссии / Слив</p>
+                                </div>
+                            </label>
+                            <label class="solid-card rounded-xl p-2.5 flex items-center gap-2 cursor-pointer border hover:border-sky-500 transition" id="label-pay-invoice">
+                                <input type="radio" name="pay_method" value="invoice" onchange="togglePayMethod('invoice')" class="text-sky-600">
+                                <div>
+                                    <p class="font-bold text-[11px] leading-tight text-high-contrast">📄 Счёт ИП/ООО</p>
+                                    <p class="text-[9px] text-muted-contrast">Официальный PDF</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Поле ИНН (появляется только если выбран официальный счёт) -->
+                    <div id="inn-container" class="hidden">
+                        <label class="block font-bold text-high-contrast mb-1">ИНН компании или ИП *</label>
+                        <input type="text" id="buyer-inn" placeholder="10 или 12 цифр ИНН для счёта" maxlength="12"
+                            class="w-full solid-input rounded-xl px-3.5 py-2.5 outline-none font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-high-contrast mb-1">ФИО / Название организации / Канал *</label>
+                        <input type="text" id="company" placeholder="Илья / AZAREK байер"
+                            class="w-full solid-input rounded-xl px-3.5 py-2.5 outline-none transition font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-high-contrast mb-1">Город получения и пункт ТК *</label>
+                        <input type="text" id="city" placeholder="г. Воронеж / терминал СДЭК ул. Ленина 5"
+                            class="w-full solid-input rounded-xl px-3.5 py-2.5 outline-none transition font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-high-contrast mb-1">Контакт в Telegram или Телефон *</label>
+                        <input type="text" id="contacts" placeholder="@username или +7 (999) 000-00-00"
+                            class="w-full solid-input rounded-xl px-3.5 py-2.5 outline-none transition font-medium">
+                    </div>
+                    <div class="no-print">
+                        <label class="block font-bold text-high-contrast mb-1">Транспортная компания / Получение</label>
+                        <select id="tk-choice" class="w-full solid-input rounded-xl px-3 py-2.5 font-medium outline-none">
+                            <option value="СДЭК">СДЭК</option>
+                            <option value="Деловые Линии">Деловые Линии</option>
+                            <option value="ПЭК">ПЭК</option>
+                            <option value="ТК КИТ (GTD)">ТК КИТ (GTD)</option>
+                            <option value="Самовывоз 19-й км МКАД">Самовывоз (19-й км МКАД вл. 20 стр. 3)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="solid-card-sub rounded-2xl p-3.5 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-high-contrast block">Итого к оплате:</span>
+                        <span class="text-[10px] text-muted-contrast" id="checkout-note-label">Прямой перевод по СБП после подтверждения</span>
+                    </div>
+                    <span class="font-black text-base text-sky-600 dark:text-sky-400" id="checkout-total">0 ₽</span>
+                </div>
+
+                <button onclick="sendOrderToBot()" class="w-full btn-azarek py-3.5 rounded-xl font-bold text-sm shadow-xl transition active:scale-[0.98] flex items-center justify-center gap-2 no-print">
+                    <span>Подтвердить и отправить заявку</span>
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // Инициализация Telegram
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Открыть на весь экран телефона
+        const tg = window.Telegram?.WebApp;
+        try {
+            tg.expand();
+            tg.ready();
+        } catch(e) {}
 
-        // База товаров (в будущем можно подтягивать JSON прямо с твоего сервера)
-        const products = [
-            { id: 'p1', title: 'Худи Oversize Premium', price: 2500, moq: 10, disc_price: 2100, img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=300&q=80' },
-            { id: 'p2', title: 'Кроссовки B2B Sport', price: 3200, moq: 8, disc_price: 2800, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' },
-            { id: 'p3', title: 'Рюкзак Urban', price: 1800, moq: 15, disc_price: 1500, img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80' }
+        const MANAGER_USERNAME = "ignatovich1_1";
+
+        function redirectToManagerSupport() {
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
+            const link = `https://t.me/${MANAGER_USERNAME}`;
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(link);
+            } else {
+                window.open(link, '_blank');
+            }
+        }
+
+        let isDarkTheme = localStorage.getItem('azarek_theme_dark') === 'true';
+
+        function applyTheme(isDark) {
+            isDarkTheme = isDark;
+            const body = document.body;
+            const btn = document.getElementById('theme-btn');
+            if (isDark) {
+                body.classList.add('dark-theme');
+                if (btn) btn.innerText = '☀️';
+            } else {
+                body.classList.remove('dark-theme');
+                if (btn) btn.innerText = '🌙';
+            }
+            try { localStorage.setItem('azarek_theme_dark', isDark ? 'true' : 'false'); } catch(e) {}
+        }
+
+        function toggleThemeMode() {
+            applyTheme(!isDarkTheme);
+            try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+            showToast(isDarkTheme ? "Тёмная тема AZAREK" : "Светлая тема AZAREK", isDarkTheme ? "🌙" : "☀️");
+        }
+
+        // БАЗА ТОВАРОВ (ОСНОВНОЙ КАНАЛ vs КАНАЛ СЛИВА)
+        const allProductsData = [
+            // ================= ОСНОВНОЙ КАНАЛ (AZAREK ОПТ) =================
+            {
+                id: 'az_tool_82',
+                channel: 'main',
+                cat: 'Наборы инструментов',
+                title: 'Набор ручного инструмента 82 предмета',
+                desc: 'Флагман AZAREK. Хром-ванадиевая сталь, трещотки 1/4 и 1/2 на 72 зуба, прочный кейс с металлическими замками. Склад 19-й км МКАД.',
+                price: 3000,
+                moq: 10,
+                box_qty: 5,
+                stock: 450,
+                weight_per_unit: 5.8,
+                badge: 'Хит Опта',
+                images: ['https://i.postimg.cc/Y9Xkz4sW/photo-2026-09-15-14-36-15.jpg'],
+                tiers: [
+                    { min: 10, price: 2150, label: '10 шт — 2150₽' },
+                    { min: 100, price: 1950, label: '100 шт — 1950₽' },
+                    { min: 300, price: 1850, label: '300 шт — 1850₽' },
+                    { min: 500, price: 1750, label: '500 шт — 1750₽' }
+                ]
+            },
+            {
+                id: 'az_brushless_drill_3in1',
+                channel: 'main',
+                cat: 'Шуруповерты и дрели',
+                title: 'Бесщеточные шуруповерты 3в1 (Bosch / Milwaukee / Makita)',
+                desc: '3 цвета на выбор. Ударный 3в1, 13 мм железный патрон, 2 АКБ по 5 капсул, кейс. Фабричный оригинал.',
+                price: 2300,
+                moq: 10,
+                box_qty: 5,
+                stock: 320,
+                weight_per_unit: 2.6,
+                badge: 'Хит 2026',
+                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
+                tiers: [
+                    { min: 10, price: 1700, label: '10 шт — 1700₽' },
+                    { min: 100, price: 1600, label: '100 шт — 1600₽' },
+                    { min: 500, price: 1400, label: '500 шт — 1400₽' }
+                ]
+            },
+            {
+                id: 'az_grinder_1600w',
+                channel: 'main',
+                cat: 'Специнструмент',
+                title: 'Болгарка 1600W с регулировкой оборотов 125мм',
+                desc: 'Цвет Бош. 1600 Ватт, плавная регулировка оборотов, 125 мм круг, рукоятка и ключ в комплекте.',
+                price: 3600,
+                moq: 10,
+                box_qty: 5,
+                stock: 210,
+                weight_per_unit: 2.3,
+                badge: '1600W Бош',
+                images: ['https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80'],
+                tiers: [
+                    { min: 10, price: 1900, label: 'От 10 шт — 1900₽' },
+                    { min: 100, price: 1800, label: 'От 100 шт — 1800₽' }
+                ]
+            },
+            {
+                id: 'az_giraffe_sander',
+                channel: 'main',
+                cat: 'Специнструмент',
+                title: 'Жираф — шлифовальная машинка для стен и потолков',
+                desc: 'Профессиональная шлифмашина с телескопической штангой, круговой LED-подсветкой и шлангом под пылесос. Кейс в комплекте.',
+                price: 8600,
+                moq: 10,
+                box_qty: 1,
+                stock: 95,
+                weight_per_unit: 5.5,
+                badge: 'Проф серия',
+                images: ['https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80'],
+                tiers: [
+                    { min: 10, price: 6100, label: 'От 10 шт — 6100₽' },
+                    { min: 100, price: 5900, label: 'От 100 шт — 5900₽' }
+                ]
+            },
+
+            // ================= КАНАЛ СО СЛИВОМ (@azarek_sliv) =================
+            {
+                id: 'az_sliv_drill_cord',
+                channel: 'sliv',
+                cat: 'Сетевой инструмент',
+                title: 'Дрель сетевая Bosch [Слив]',
+                desc: 'Канал @azarek_sliv. Новая, складской остаток. Уценка от 1 шт. В сливе торга нет!',
+                price: 1300,
+                moq: 1,
+                box_qty: 1,
+                stock: 3,
+                weight_per_unit: 1.8,
+                badge: '🔥 Слив 1300₽',
+                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
+                tiers: [{ min: 1, price: 1300, label: 'Фикс: 1300₽' }]
+            },
+            {
+                id: 'az_sliv_shurik_defect',
+                channel: 'sliv',
+                cat: 'Аккумуляторный инструмент',
+                title: 'Шуруповерт бесщеточный [Дефект: сломан кейс]',
+                desc: 'Инструмент 100% новый, рабочий, протестирован. Треснул пластиковый кейс при транспортировке. Полный комплект: 2 АКБ + ЗУ.',
+                price: 1500,
+                moq: 1,
+                box_qty: 1,
+                stock: 2,
+                weight_per_unit: 2.2,
+                badge: '🔥 Скол кейса',
+                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
+                tiers: [{ min: 1, price: 1500, label: 'Фикс: 1500₽' }]
+            },
+            {
+                id: 'az_sliv_laser_level',
+                channel: 'sliv',
+                cat: 'Измерительный инструмент',
+                title: 'Лазерный уровень 4D [Дефект: скол на кейсе]',
+                desc: 'Нивелир 16 линий, зеленый луч, пульт, микролифт, 2 батареи. Точность проверена. Незначительный скол на внешнем футляре.',
+                price: 1800,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                weight_per_unit: 2.1,
+                badge: '🔥 Уценка 1800₽',
+                images: ['https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80'],
+                tiers: [{ min: 1, price: 1800, label: 'Фикс: 1800₽' }]
+            },
+            {
+                id: 'az_sliv_router_bosch',
+                channel: 'sliv',
+                cat: 'Сетевой инструмент',
+                title: 'Фрезер цвет Бош [Слив]',
+                desc: 'Канал @azarek_sliv. Полный заводской комплект, цанги, упоры. Готов к отгрузке штучно.',
+                price: 2700,
+                moq: 1,
+                box_qty: 1,
+                stock: 2,
+                weight_per_unit: 3.4,
+                badge: '🔥 Слив 2700₽',
+                images: ['https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80'],
+                tiers: [{ min: 1, price: 2700, label: 'Фикс: 2700₽' }]
+            }
         ];
 
-        let cart = {}; // Корзина формата { 'p1': 10, 'p2': 16 }
+        let currentChannel = 'main'; // 'main' | 'sliv'
+        let currentSubCat = 'all';
+        let currentPayMethod = 'sbp'; // 'sbp' | 'invoice'
+        let favorites = [];
+        let cart = {};
+        let currentModalProductId = null;
 
-        // Отрисовка товаров
-        function renderProducts() {
+        function togglePayMethod(method) {
+            currentPayMethod = method;
+            const innBox = document.getElementById('inn-container');
+            const noteLabel = document.getElementById('checkout-note-label');
+            
+            if (method === 'invoice') {
+                innBox.classList.remove('hidden');
+                noteLabel.innerText = 'Официальный счёт-спецификация в PDF для банка';
+            } else {
+                innBox.classList.add('hidden');
+                noteLabel.innerText = 'Прямой перевод по СБП после подтверждения';
+            }
+            try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
+        }
+
+        function switchChannel(channel) {
+            currentChannel = channel;
+            currentSubCat = 'all';
+
+            const btnMain = document.getElementById('btn-tab-main');
+            const btnSliv = document.getElementById('btn-tab-sliv');
+            const banner = document.getElementById('channel-info-banner');
+            const bBadge = document.getElementById('banner-badge');
+            const bSubbadge = document.getElementById('banner-subbadge');
+            const bTitle = document.getElementById('banner-title');
+            const bDesc = document.getElementById('banner-desc');
+            const headerTag = document.getElementById('header-brand-tag');
+
+            if (channel === 'main') {
+                btnMain.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 shadow-md btn-azarek';
+                btnSliv.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 text-muted-contrast hover:text-rose-500';
+                
+                banner.className = 'solid-card rounded-2xl p-3.5 shadow-sm relative overflow-hidden bg-gradient-to-br from-slate-900 to-sky-950 text-white transition-all duration-300';
+                bBadge.innerText = 'Основной склад';
+                bBadge.className = 'text-[9px] font-black uppercase tracking-widest bg-cyan-500 text-slate-950 px-2 py-0.5 rounded';
+                bSubbadge.innerText = 'Опт от 5-10 шт • Динамический прайс';
+                bTitle.innerText = 'Оптовый инструмент и наборы AZAREK';
+                bDesc.innerText = 'Цена падает автоматически при увеличении тиража. Проверка на брак 100%. Отгрузка с 19 км МКАД.';
+                headerTag.innerText = 'ОПТ / ДРОП';
+                headerTag.className = 'px-1.5 py-0.5 rounded text-[9px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase border border-sky-500/20';
+            } else {
+                btnSliv.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 shadow-md btn-sliv';
+                btnMain.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 text-muted-contrast hover:text-sky-500';
+                
+                banner.className = 'solid-card rounded-2xl p-3.5 shadow-sm relative overflow-hidden bg-gradient-to-br from-slate-900 via-rose-950 to-orange-950 text-white transition-all duration-300';
+                bBadge.innerText = 'Канал @azarek_sliv';
+                bBadge.className = 'text-[9px] font-black uppercase tracking-widest bg-rose-500 text-white px-2 py-0.5 rounded';
+                bSubbadge.innerText = 'Уценка от 1 шт • Без торга';
+                bTitle.innerText = '🔥 Быстрый слив и уцененный инструмент';
+                bDesc.innerText = 'Витринные образцы, остатки партий и наборы с мелкими дефектами упаковки. Забирают быстро!';
+                headerTag.innerText = 'СЛИВ / УЦЕНКА';
+                headerTag.className = 'px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500/10 text-rose-500 uppercase border border-rose-500/20';
+            }
+
+            try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
+            renderSubcategoryPills();
+            filterProducts();
+        }
+
+        function renderSubcategoryPills() {
+            const container = document.getElementById('subcategories-pills');
+            container.innerHTML = '';
+
+            let cats = ['all'];
+            if (currentChannel === 'main') {
+                cats.push('Наборы инструментов', 'Шуруповерты и дрели', 'Специнструмент');
+            } else {
+                cats.push('Сетевой инструмент', 'Аккумуляторный инструмент', 'Измерительный инструмент');
+            }
+            cats.push('favorites');
+
+            cats.forEach(c => {
+                let label = c === 'all' ? 'Все товары канала' : (c === 'favorites' ? '❤️ Избранное' : c);
+                const isActive = currentSubCat === c;
+                const activeClass = currentChannel === 'main' ? 'btn-azarek font-bold text-white shadow-sm' : 'btn-sliv font-bold text-white shadow-sm';
+                const inactiveClass = 'solid-card text-muted-contrast font-semibold';
+
+                container.innerHTML += `
+                    <button onclick="setSubCategory('${c}')" class="px-4 py-1.5 rounded-xl text-xs whitespace-nowrap transition ${isActive ? activeClass : inactiveClass}">
+                        ${label}
+                    </button>
+                `;
+            });
+        }
+
+        function setSubCategory(c) {
+            currentSubCat = c;
+            renderSubcategoryPills();
+            filterProducts();
+            try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
+        }
+
+        function filterProducts() {
+            const query = (document.getElementById('search')?.value || '').toLowerCase();
+            const sortMode = document.getElementById('sort-select')?.value || 'default';
+
+            let filtered = allProductsData.filter(p => p.channel === currentChannel);
+
+            if (currentSubCat === 'favorites') {
+                filtered = filtered.filter(p => favorites.includes(p.id));
+            } else if (currentSubCat !== 'all') {
+                filtered = filtered.filter(p => p.cat === currentSubCat);
+            }
+
+            if (query) {
+                filtered = filtered.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+            }
+
+            if (sortMode === 'price_asc') {
+                filtered.sort((a, b) => (a.tiers?.[0]?.price || a.price) - (b.tiers?.[0]?.price || b.price));
+            } else if (sortMode === 'price_desc') {
+                filtered.sort((a, b) => (b.tiers?.[0]?.price || b.price) - (a.tiers?.[0]?.price || a.price));
+            } else if (sortMode === 'stock_desc') {
+                filtered.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+            }
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(items) {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
-            
-            products.forEach(p => {
-                const qty = cart[p.id] || 0;
-                
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-12 text-muted-contrast font-bold text-xs">В этой вкладке позиции не найдены</div>`;
+                return;
+            }
+
+            const isSliv = currentChannel === 'sliv';
+
+            items.forEach(p => {
+                const cartItem = cart[p.id];
+                const qty = cartItem ? cartItem.qty : 0;
+                const isFav = favorites.includes(p.id);
+
+                const rawImg = (p.images && p.images[0]) ? p.images[0] : '';
+                const moq = Number(p.moq) || 1;
+                const boxQty = Number(p.box_qty) || moq;
+                const basePrice = Number(p.price) || 2000;
+                const tierPrice = (p.tiers && p.tiers[0]) ? Number(p.tiers[0].price) : basePrice;
+
                 container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow border overflow-hidden flex flex-col">
-                        <img src="${p.img}" class="w-full h-32 object-cover">
-                        <div class="p-3 flex flex-col flex-grow">
-                            <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1">${p.title}</h3>
-                            <p class="text-xs text-gray-500 mb-2">От ${p.moq} шт: <b class="text-blue-600">${p.disc_price}₽</b><br>Розница: ${p.price}₽</p>
-                            
-                            <div class="mt-auto">
-                                ${qty === 0 
-                                    ? `<button onclick="updateCart('${p.id}', ${p.moq})" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-bold transition">Добавить</button>`
-                                    : `<div class="flex items-center justify-between bg-blue-50 rounded-lg p-1">
-                                        <button onclick="updateCart('${p.id}', ${qty - p.moq})" class="w-8 h-8 flex items-center justify-center text-blue-600 font-bold bg-white rounded shadow-sm">-</button>
-                                        <span class="font-bold text-blue-800 text-sm">${qty} шт</span>
-                                        <button onclick="updateCart('${p.id}', ${qty + p.moq})" class="w-8 h-8 flex items-center justify-center text-blue-600 font-bold bg-white rounded shadow-sm">+</button>
-                                       </div>`
-                                }
+                    <div class="solid-card rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-md transition relative group">
+                        <div class="absolute top-2 right-2 z-20 flex items-center gap-1">
+                            <button onclick="toggleFavorite('${p.id}', event)" class="w-7 h-7 rounded-lg solid-card flex items-center justify-center text-xs shadow-sm transition active:scale-90">
+                                ${isFav ? '❤️' : '🤍'}
+                            </button>
+                        </div>
+
+                        <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
+                            <div class="relative w-full aspect-[4/3] bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                <img src="${rawImg}" alt="${p.title}" class="w-full h-full object-cover">
+                                <span class="absolute top-2 left-2 ${isSliv ? 'bg-rose-600' : 'bg-sky-600'} text-white font-black text-[9px] px-2 py-0.5 rounded-md tracking-wider shadow-sm">
+                                    ${p.badge || (isSliv ? 'СЛИВ' : 'ОПТ')}
+                                </span>
                             </div>
+                            <div class="p-3 pb-1">
+                                <div class="flex items-center justify-between text-[10px] text-muted-contrast font-semibold mb-1">
+                                    <span>${p.cat}</span>
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">${p.stock} шт</span>
+                                </div>
+                                <h3 class="font-bold text-xs text-high-contrast leading-snug line-clamp-2">${p.title}</h3>
+                                <div class="mt-2 solid-card-sub rounded-xl p-2">
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="font-black ${isSliv ? 'text-rose-500' : 'text-sky-600 dark:text-sky-400'} text-sm">${tierPrice.toLocaleString('ru-RU')} ₽</span>
+                                        ${basePrice > tierPrice ? `<span class="text-[10px] text-muted-contrast line-through">${basePrice.toLocaleString('ru-RU')} ₽</span>` : ''}
+                                    </div>
+                                    <div class="flex justify-between items-center mt-0.5">
+                                        <p class="text-[10px] font-semibold text-muted-contrast">${isSliv ? 'Штучно от 1 шт' : `Партия от ${moq} шт`}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 pt-2">
+                            ${qty === 0 
+                                ? `<button onclick="updateCart('${p.id}', ${moq}); triggerFlyToCartAnimation(this);" class="w-full py-2 ${isSliv ? 'btn-sliv' : 'btn-azarek'} text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 shadow-sm">
+                                    <span>В заказ</span>
+                                    <span class="text-[10px] opacity-80">(${moq} шт)</span>
+                                   </button>`
+                                : `<div class="flex items-center justify-between bg-slate-900 text-white rounded-xl p-1 shadow-inner">
+                                    <button onclick="updateCart('${p.id}', ${qty - boxQty})" class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold active:scale-90">-</button>
+                                    <span class="text-xs font-bold">${qty} шт</span>
+                                    <button onclick="updateCart('${p.id}', ${qty + boxQty}); triggerFlyToCartAnimation(this);" class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold active:scale-90">+</button>
+                                   </div>`
+                            }
                         </div>
                     </div>
                 `;
             });
-            updateCartUI();
         }
 
-        // Логика добавления в корзину
+        function getBaseUnitPrice(product, qty) {
+            let unitPrice = (product.tiers && product.tiers[0]) ? product.tiers[0].price : product.price;
+            if (product.tiers && Array.isArray(product.tiers)) {
+                for (let t of product.tiers) {
+                    if (qty >= t.min) unitPrice = t.price;
+                }
+            }
+            return unitPrice;
+        }
+
+        function openProductModal(id) {
+            const p = allProductsData.find(item => item.id === id);
+            if (!p) return;
+            currentModalProductId = id;
+
+            const cartItem = cart[p.id];
+            const qty = cartItem ? cartItem.qty : (p.moq || 1);
+            const isSliv = p.channel === 'sliv';
+
+            document.getElementById('modal-badge').innerText = p.badge || (isSliv ? '🔥 СЛИВ' : '📦 ОПТ');
+            document.getElementById('modal-badge').className = `px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${isSliv ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20'}`;
+            document.getElementById('modal-stock-text').innerText = `В наличии: ${p.stock || 0} шт`;
+            document.getElementById('modal-main-img').src = (p.images && p.images[0]) ? p.images[0] : '';
+            document.getElementById('modal-title').innerText = p.title;
+            document.getElementById('modal-desc').innerText = p.desc || '';
+
+            const tiersWrapper = document.getElementById('modal-tiers-wrapper');
+            const tiersBox = document.getElementById('modal-tiers-container');
+            
+            if (isSliv || !p.tiers || p.tiers.length <= 1) {
+                tiersWrapper.classList.add('hidden');
+            } else {
+                tiersWrapper.classList.remove('hidden');
+                tiersBox.innerHTML = '';
+                p.tiers.forEach(t => {
+                    tiersBox.innerHTML += `
+                        <div class="solid-card rounded-lg p-2">
+                            <span class="text-[10px] text-muted-contrast block">${t.label}</span>
+                            <span class="font-extrabold text-sky-600 dark:text-sky-400 text-xs">${t.price} ₽</span>
+                        </div>
+                    `;
+                });
+            }
+
+            const slider = document.getElementById('modal-slider');
+            slider.min = p.moq || 1;
+            slider.max = Math.max(p.stock || 50, (p.moq || 5) * (isSliv ? 1 : 10));
+            slider.step = p.box_qty || 1;
+            slider.value = qty;
+
+            document.getElementById('slider-number-input').value = qty;
+            document.getElementById('slider-title-label').innerText = isSliv ? 'Штук к заказу:' : 'Объем партии:';
+            document.getElementById('box-quantity-hint').innerText = isSliv ? 'Штучный выкуп' : `Квант: ${p.box_qty || p.moq || 1} шт`;
+
+            const chips = document.getElementById('quick-preset-chips');
+            chips.innerHTML = '';
+            (p.tiers || []).forEach(t => {
+                chips.innerHTML += `<button onclick="setModalQty(${t.min})" class="px-2.5 py-1 rounded-lg solid-card border text-high-contrast text-[10px] font-bold active:scale-95 whitespace-nowrap">${t.min} шт</button>`;
+            });
+
+            updateModalCalculations(p, qty);
+
+            document.getElementById('product-modal').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('product-sheet').classList.remove('translate-y-full');
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
+        }
+
+        function setModalQty(qty) {
+            document.getElementById('modal-slider').value = qty;
+            document.getElementById('slider-number-input').value = qty;
+            const p = allProductsData.find(item => item.id === currentModalProductId);
+            if (p) updateModalCalculations(p, qty);
+        }
+
+        function onSliderChange(val) {
+            const qty = parseInt(val) || 1;
+            document.getElementById('slider-number-input').value = qty;
+            const p = allProductsData.find(item => item.id === currentModalProductId);
+            if (p) updateModalCalculations(p, qty);
+        }
+
+        function onNumberInputChange(val) {
+            const qty = parseInt(val) || 1;
+            document.getElementById('modal-slider').value = qty;
+            const p = allProductsData.find(item => item.id === currentModalProductId);
+            if (p) updateModalCalculations(p, qty);
+        }
+
+        function updateModalCalculations(product, qty) {
+            const unitPrice = getBaseUnitPrice(product, qty);
+            const total = qty * unitPrice;
+            const isSliv = product.channel === 'sliv';
+
+            document.getElementById('tier-unit-price').innerText = `${unitPrice} ₽`;
+            document.getElementById('slider-total-price').innerText = `${total.toLocaleString('ru-RU')} ₽`;
+
+            const slot = document.getElementById('modal-action-slot');
+            slot.innerHTML = `
+                <button onclick="commitModalToCart('${product.id}', ${qty}); closeProductModal(); triggerFlyToCartAnimation(this);" class="w-full py-3.5 ${isSliv ? 'btn-sliv' : 'btn-azarek'} rounded-xl text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
+                    <span>Добавить в заказ (${qty} шт)</span>
+                    <span>•</span>
+                    <span>${total.toLocaleString('ru-RU')} ₽</span>
+                </button>
+            `;
+        }
+
+        function commitModalToCart(id, qty) {
+            updateCart(id, qty);
+            showToast("Добавлено в заявку");
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-sheet').classList.add('translate-y-full');
+            document.getElementById('product-modal').classList.add('opacity-0', 'pointer-events-none');
+        }
+
         function updateCart(id, newQty) {
+            const p = allProductsData.find(prod => prod.id === id);
+            if (!p) return;
+
             if (newQty <= 0) {
                 delete cart[id];
             } else {
-                cart[id] = newQty;
+                const unitPrice = getBaseUnitPrice(p, newQty);
+                cart[id] = { qty: newQty, unitPrice: unitPrice };
             }
-            tg.HapticFeedback.selectionChanged(); // Легкая вибрация при нажатии
-            renderProducts();
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
+            filterProducts();
+            updateCartUI();
         }
 
-        // Обновление итоговой суммы
-        function updateCartUI() {
+        function clearCart() {
+            cart = {};
+            hideCheckout();
+            filterProducts();
+            updateCartUI();
+            showToast("Корзина очищена", "🗑");
+        }
+
+        function calculateSubtotal() {
             let total = 0;
-            let totalItems = 0;
-
-            for (const [id, qty] of Object.entries(cart)) {
-                const product = products.find(p => p.id === id);
-                const actualPrice = qty >= product.moq ? product.disc_price : product.price;
-                total += actualPrice * qty;
-                totalItems += qty;
+            for (const [id, item] of Object.entries(cart)) {
+                total += item.unitPrice * item.qty;
             }
+            return total;
+        }
 
+        function updateCartUI() {
+            const total = calculateSubtotal();
+            const totalItems = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
             const cartBar = document.getElementById('cart-bar');
+
             if (totalItems > 0) {
-                cartBar.classList.remove('hidden');
+                cartBar.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
                 document.getElementById('total-price').innerText = total.toLocaleString('ru-RU') + ' ₽';
+                document.getElementById('cart-items-count').innerText = `${totalItems} шт`;
             } else {
-                cartBar.classList.add('hidden');
+                cartBar.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
             }
         }
 
         function showCheckout() {
-            document.getElementById('checkout-form').classList.remove('hidden');
+            const total = calculateSubtotal();
+            document.getElementById('checkout-total').innerText = total.toLocaleString('ru-RU') + ' ₽';
+
+            const itemsContainer = document.getElementById('checkout-cart-items');
+            itemsContainer.innerHTML = '';
+            for (const [id, item] of Object.entries(cart)) {
+                const p = allProductsData.find(prod => prod.id === id);
+                if (p) {
+                    const isSliv = p.channel === 'sliv';
+                    itemsContainer.innerHTML += `
+                        <div class="flex justify-between items-center solid-card-sub rounded-xl p-2.5 text-xs">
+                            <div>
+                                <p class="font-bold text-high-contrast leading-tight">
+                                    ${p.title} 
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${isSliv ? 'bg-rose-500/10 text-rose-500' : 'bg-sky-500/10 text-sky-500'}">${isSliv ? 'СЛИВ' : 'ОПТ'}</span>
+                                </p>
+                                <p class="text-[10px] text-muted-contrast mt-0.5">${item.qty} шт × ${item.unitPrice} ₽</p>
+                            </div>
+                            <span class="font-extrabold text-sky-600 dark:text-sky-400">${(item.qty * item.unitPrice).toLocaleString('ru-RU')} ₽</span>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('checkout-form').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('checkout-sheet').classList.remove('translate-y-full');
         }
 
         function hideCheckout() {
-            document.getElementById('checkout-form').classList.add('hidden');
+            document.getElementById('checkout-sheet').classList.add('translate-y-full');
+            document.getElementById('checkout-form').classList.add('opacity-0', 'pointer-events-none');
         }
 
-        // Отправка данных обратно в бота
         function sendOrderToBot() {
-            const company = document.getElementById('company').value;
-            const city = document.getElementById('city').value;
-            const contacts = document.getElementById('contacts').value;
+            const company = document.getElementById('company').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const contacts = document.getElementById('contacts').value.trim();
+            const tk = document.getElementById('tk-choice').value;
+            const buyerInn = document.getElementById('buyer-inn').value.trim();
 
             if (!company || !city || !contacts) {
-                tg.showAlert("Пожалуйста, заполните все поля для выставления счета.");
+                showToast("Заполните имя, город и контакт", "⚠️");
+                return;
+            }
+
+            if (currentPayMethod === 'invoice' && !buyerInn) {
+                showToast("Укажите ИНН для выставления счёта", "⚠️");
                 return;
             }
 
             let orderItems = [];
-            let totalSum = 0;
+            let total = calculateSubtotal();
 
-            for (const [id, qty] of Object.entries(cart)) {
-                const p = products.find(p => p.id === id);
-                const price = qty >= p.moq ? p.disc_price : p.price;
-                const total = price * qty;
-                totalSum += total;
-                orderItems.push({ title: p.title, qty: qty, price: price, total: total });
+            for (const [id, item] of Object.entries(cart)) {
+                const p = allProductsData.find(prod => prod.id === id);
+                if (p) {
+                    orderItems.push({
+                        title: p.title + (p.channel === 'sliv' ? ' [Слив/Уценка]' : ''),
+                        qty: item.qty,
+                        price: item.unitPrice,
+                        total: item.unitPrice * item.qty
+                    });
+                }
             }
 
-            const orderData = {
+            const payload = {
+                type: 'order',
+                pay_method: currentPayMethod,
+                buyer_inn: buyerInn || 'Не указан',
                 cart: orderItems,
-                total_sum: totalSum,
-                company: company,
+                total_sum: total,
+                company: `${company} (ТК: ${tk})`,
                 city: city,
                 contacts: contacts
             };
 
-            // Передаем JSON строку обратно в Python (сработает web_app_data_handler)
-            tg.sendData(JSON.stringify(orderData));
+            if (tg && typeof tg.sendData === 'function') {
+                tg.sendData(JSON.stringify(payload));
+            } else {
+                showToast("Заказ сформирован! Передайте боту в чате.", "✅");
+            }
         }
 
-        // Стартовый рендер
-        renderProducts();
+        function openLightbox() {
+            const currentImg = document.getElementById('modal-main-img').src;
+            if (!currentImg) return;
+            document.getElementById('lightbox-img').src = currentImg;
+            document.getElementById('lightbox-modal').classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function openTrackerModal() {
+            document.getElementById('tracker-modal').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('tracker-sheet').classList.remove('translate-y-full');
+        }
+
+        function closeTrackerModal() {
+            document.getElementById('tracker-sheet').classList.add('translate-y-full');
+            document.getElementById('tracker-modal').classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function checkOrderStatus() {
+            const val = document.getElementById('track-input').value.trim();
+            if (!val) {
+                showToast("Введите номер заявки", "⚠️");
+                return;
+            }
+            document.getElementById('track-id-display').innerText = `Заявка AZ-${val}`;
+            document.getElementById('tracker-result').classList.remove('hidden');
+        }
+
+        function triggerFlyToCartAnimation(btnElement) {
+            try {
+                const rect = btnElement.getBoundingClientRect();
+                const cartBar = document.getElementById('cart-bar');
+                const cartRect = cartBar.getBoundingClientRect();
+
+                const particle = document.createElement('div');
+                particle.className = 'fly-particle w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-lg';
+                particle.innerText = '+1';
+                particle.style.left = `${rect.left + rect.width / 2 - 12}px`;
+                particle.style.top = `${rect.top + rect.height / 2 - 12}px`;
+                document.body.appendChild(particle);
+
+                const targetX = cartRect.left + cartRect.width / 2 - (rect.left + rect.width / 2);
+                const targetY = cartRect.top + cartRect.height / 2 - (rect.top + rect.height / 2);
+
+                requestAnimationFrame(() => {
+                    particle.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.2)`;
+                    particle.style.opacity = '0';
+                });
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 550);
+            } catch(e) {}
+        }
+
+        function showToast(text, icon = '✅') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            document.getElementById('toast-text').innerText = text;
+            document.getElementById('toast-icon').innerText = icon;
+            toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+            }, 2300);
+        }
+
+        function toggleFavorite(id, event) {
+            if (event) event.stopPropagation();
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                showToast("Удалено из избранного", "💔");
+            } else {
+                favorites.push(id);
+                showToast("Добавлено в избранное", "❤️");
+            }
+            try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
+            filterProducts();
+        }
+
+        applyTheme(isDarkTheme);
+        switchChannel('main');
     </script>
 </body>
 </html>
