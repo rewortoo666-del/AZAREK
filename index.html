@@ -637,7 +637,6 @@
                 const now = ctx.currentTime;
 
                 if (type === 'click') {
-                    // 1. Премиальный тактильный глухой щелчок (Haptic Thud)
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
@@ -651,7 +650,6 @@
                     osc.stop(now + 0.02);
 
                 } else if (type === 'cart') {
-                    // 2. Индустриальная защелка MagSafe / кейса
                     [0, 0.022].forEach((delay, idx) => {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
@@ -668,15 +666,12 @@
                     });
 
                 } else if (type === 'unlock' || type === 'fintech') {
-                    // 3. МЯГКИЙ ФИНТЕХ-АККОРД (Soft Fintech Glass - Apple Pay / Банковский перевод)
-                    // Гармонический дуэт чистых синусоид D5 (587.33 Гц) + A5 (880.00 Гц)
                     const freqs = [587.33, 880.00];
                     freqs.forEach(freq => {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
                         osc.type = 'sine';
                         osc.frequency.setValueAtTime(freq, now);
-                        // Мягкая атака без щелчка + плавное благородное затухание за 0.28с
                         gain.gain.setValueAtTime(0.001, now);
                         gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
                         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
@@ -780,7 +775,7 @@
             calculateSellerROI();
         }
 
-        const allProductsData = [
+        let allProductsData = [
             {
                 id: 'az_tool_82',
                 channel: 'main',
@@ -958,7 +953,6 @@
                 return;
             }
 
-            // Мягкий финтех-аккорд при успешной выгрузке отчета
             playCyberSound('unlock');
 
             const rows = [];
@@ -1400,7 +1394,6 @@
             lastActiveTierIndex = currentTierIndex;
 
             if (isNewTierUnlocked) {
-                // Мягкий финтех-аккорд при разблокировке оптовой ступени
                 playCyberSound('unlock');
                 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
                 showToast("Разблокирована новая оптовая цена! 🎉", "⚡️");
@@ -1550,7 +1543,6 @@
         }
 
         function sendOrderToBot() {
-            // Мягкий финтех-аккорд подтверждения заказа
             playCyberSound('unlock');
 
             const company = document.getElementById('company').value.trim();
@@ -1693,6 +1685,28 @@
         attachSwipeToDismiss('tracker-sheet', closeTrackerModal);
         attachSwipeToDismiss('checkout-sheet', hideCheckout);
 
+        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxKQnE0oR0X-nuW9LX2R_7D7OzQhokLJrSsSgwiXn3ZRJAiEENhuGXVKSuE5Las5jo1/exec";
+
+        async function syncWithGoogleSheet() {
+            try {
+                const res = await fetch(GOOGLE_SHEET_API);
+                if (!res.ok) return;
+                const sheetData = await res.json();
+        
+                if (Array.isArray(sheetData) && sheetData.length > 0) {
+                    const slivItems = allProductsData.filter(p => p.channel === 'sliv');
+                    allProductsData = [...sheetData, ...slivItems];
+                    
+                    renderSubcategoryPills();
+                    filterProducts();
+                    console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
+                }
+            } catch(e) {
+                console.warn("Загрузка из таблицы не удалась, используется локальный кэш:", e);
+            }
+        }
+
+        syncWithGoogleSheet();
         switchChannel('main');
     </script>
 </body>
