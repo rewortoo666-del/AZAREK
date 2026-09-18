@@ -358,7 +358,7 @@
                     <div class="grid grid-cols-3 gap-2" id="modal-tiers-container"></div>
                 </div>
 
-                <!-- Вкладка 2: Калькулятор WB/Ozon с отцентрированным графиком -->
+                <!-- Вкладка 2: Калькулятор WB/Ozon с графиком -->
                 <div id="tab-roi" class="hidden space-y-3">
                     <div class="hud-card rounded-2xl p-3.5 space-y-3 border border-brand-emerald/30">
                         <div class="flex justify-between items-center">
@@ -389,7 +389,7 @@
                             </div>
                         </div>
 
-                        <!-- Мини-график: фикс смещения кружочка вправо -->
+                        <!-- Мини-график продаж -->
                         <div class="hud-glass p-2.5 rounded-xl border border-white/5 space-y-1.5">
                             <div class="flex justify-between items-center text-[9px] font-mono text-slate-400">
                                 <span>Динамика продаж WB (Сезон 2026):</span>
@@ -405,7 +405,6 @@
                                 <path d="M10,40 Q50,36 90,38 T170,22 T230,15 T275,10 L275,50 L10,50 Z" fill="url(#sparkGlow)"/>
                                 <path d="M10,40 Q50,36 90,38 T170,22 T230,15 T275,10" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
                                 
-                                <!-- Фиксированный пульсирующий маячок без CSS scale смещения -->
                                 <circle cx="275" cy="10" r="3.5" fill="#00F5FF">
                                     <animate attributeName="r" values="3.5;6.5;3.5" dur="1.8s" repeatCount="indefinite"/>
                                     <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite"/>
@@ -424,7 +423,7 @@
                     </div>
                 </div>
 
-                <!-- Блок количества партии (Слайдер со строгим центрированием) -->
+                <!-- Блок количества партии -->
                 <div class="hud-card rounded-2xl p-4 space-y-3 tech-border-cyan">
                     <div class="flex justify-between items-center">
                         <div>
@@ -618,6 +617,7 @@
             }
         }
 
+        // ====================== СИНТЕЗИРОВАННЫЙ КИБЕР-ЗВУК (WEB AUDIO API) ======================
         let audioCtx = null;
         function getAudioContext() {
             if (!audioCtx) {
@@ -634,36 +634,57 @@
             try {
                 const ctx = getAudioContext();
                 if (!ctx) return;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
                 const now = ctx.currentTime;
 
                 if (type === 'click') {
+                    // 1. Премиальный тактильный глухой щелчок (Haptic Thud)
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(950, now);
-                    osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.linearRampToValueAtTime(0.001, now + 0.04);
+                    osc.frequency.setValueAtTime(140, now);
+                    osc.frequency.exponentialRampToValueAtTime(35, now + 0.02);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
                     osc.start(now);
-                    osc.stop(now + 0.04);
-                } else if (type === 'unlock') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(540, now);
-                    osc.frequency.exponentialRampToValueAtTime(1180, now + 0.12);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.linearRampToValueAtTime(0.001, now + 0.12);
-                    osc.start(now);
-                    osc.stop(now + 0.12);
+                    osc.stop(now + 0.02);
+
                 } else if (type === 'cart') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(420, now);
-                    osc.frequency.exponentialRampToValueAtTime(840, now + 0.07);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0.001, now + 0.07);
-                    osc.start(now);
-                    osc.stop(now + 0.07);
+                    // 2. Индустриальная защелка MagSafe / кейса
+                    [0, 0.022].forEach((delay, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = idx === 0 ? 'triangle' : 'sine';
+                        const startFreq = idx === 0 ? 340 : 110;
+                        osc.frequency.setValueAtTime(startFreq, now + delay);
+                        osc.frequency.exponentialRampToValueAtTime(45, now + delay + 0.028);
+                        gain.gain.setValueAtTime(idx === 0 ? 0.12 : 0.22, now + delay);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.028);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + delay);
+                        osc.stop(now + delay + 0.028);
+                    });
+
+                } else if (type === 'unlock' || type === 'fintech') {
+                    // 3. МЯГКИЙ ФИНТЕХ-АККОРД (Soft Fintech Glass - Apple Pay / Банковский перевод)
+                    // Гармонический дуэт чистых синусоид D5 (587.33 Гц) + A5 (880.00 Гц)
+                    const freqs = [587.33, 880.00];
+                    freqs.forEach(freq => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+                        // Мягкая атака без щелчка + плавное благородное затухание за 0.28с
+                        gain.gain.setValueAtTime(0.001, now);
+                        gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.28);
+                    });
                 }
             } catch(e) {}
         }
@@ -848,7 +869,7 @@
                 stock: 3,
                 badge: 'СЛИВ 1300₽',
                 images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1300, label: 'Штучно: 1300₽' }]
+                tiers: [{ min: 1, price: 1300, label: 'Штучно: 1300 ₽' }]
             },
             {
                 id: 'az_sliv_shurik_defect',
@@ -863,7 +884,7 @@
                 stock: 2,
                 badge: 'ТРЕЩИНА КЕЙСА',
                 images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1500, label: 'Штучно: 1500₽' }]
+                tiers: [{ min: 1, price: 1500, label: 'Штучно: 1500 ₽' }]
             },
             {
                 id: 'az_sliv_laser_level',
@@ -878,7 +899,7 @@
                 stock: 1,
                 badge: 'УЦЕНКА 1800₽',
                 images: ['https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1800, label: 'Штучно: 1800₽' }]
+                tiers: [{ min: 1, price: 1800, label: 'Штучно: 1800 ₽' }]
             },
             {
                 id: 'az_sliv_router_bosch',
@@ -893,7 +914,7 @@
                 stock: 2,
                 badge: 'СЛИВ 2700₽',
                 images: ['https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 2700, label: 'Штучно: 2700₽' }]
+                tiers: [{ min: 1, price: 2700, label: 'Штучно: 2700 ₽' }]
             }
         ];
 
@@ -931,11 +952,14 @@
         }
 
         function downloadCartExcel() {
-            playCyberSound('click');
             if (Object.keys(cart).length === 0) {
+                playCyberSound('click');
                 showToast("Корзина пуста", "⚠️");
                 return;
             }
+
+            // Мягкий финтех-аккорд при успешной выгрузке отчета
+            playCyberSound('unlock');
 
             const rows = [];
             let total = 0;
@@ -1376,6 +1400,7 @@
             lastActiveTierIndex = currentTierIndex;
 
             if (isNewTierUnlocked) {
+                // Мягкий финтех-аккорд при разблокировке оптовой ступени
                 playCyberSound('unlock');
                 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
                 showToast("Разблокирована новая оптовая цена! 🎉", "⚡️");
@@ -1525,7 +1550,9 @@
         }
 
         function sendOrderToBot() {
-            playCyberSound('click');
+            // Мягкий финтех-аккорд подтверждения заказа
+            playCyberSound('unlock');
+
             const company = document.getElementById('company').value.trim();
             const city = document.getElementById('city').value.trim();
             const contacts = document.getElementById('contacts').value.trim();
