@@ -281,7 +281,6 @@
 
         <!-- Плавающий бар корзины с MOQ-прогрессбаром -->
         <div id="cart-bar" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[420px] hud-glass bg-slate-950/95 rounded-2xl p-3 px-4 flex flex-col gap-2 shadow-2xl opacity-0 pointer-events-none translate-y-4 transition-all duration-300 z-40 border border-brand-cyan/40 hud-glow-cyan">
-            
             <div class="w-full space-y-1">
                 <div class="flex justify-between items-center text-[9px] font-mono">
                     <span class="text-slate-400" id="moq-bar-title">Минимальная партия (10 шт):</span>
@@ -307,10 +306,9 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ТОВАРА (СО СВАЙПОМ ЗАКРЫТИЯ ВНИЗ) -->
+        <!-- МОДАЛЬНОЕ ОКНО ТОВАРА -->
         <div id="product-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="w-full max-w-md hud-glass bg-slate-950/95 rounded-t-[32px] p-5 pt-3 space-y-4 max-h-[92vh] overflow-y-auto transform translate-y-full transition-transform duration-300 border-t border-brand-cyan/40 select-none" id="product-sheet">
-                
                 <div class="w-12 h-1.5 rounded-full bg-white/20 mx-auto cursor-grab active:cursor-grabbing mb-1" id="sheet-handle"></div>
 
                 <div class="flex justify-between items-start">
@@ -358,7 +356,7 @@
                     <div class="grid grid-cols-3 gap-2" id="modal-tiers-container"></div>
                 </div>
 
-                <!-- Вкладка 2: Калькулятор WB/Ozon с графиком -->
+                <!-- Вкладка 2: Калькулятор WB/Ozon -->
                 <div id="tab-roi" class="hidden space-y-3">
                     <div class="hud-card rounded-2xl p-3.5 space-y-3 border border-brand-emerald/30">
                         <div class="flex justify-between items-center">
@@ -369,7 +367,6 @@
                             </div>
                         </div>
 
-                        <!-- Переключатель схемы логистики FBO / FBS -->
                         <div class="flex items-center justify-between hud-glass p-1.5 rounded-xl border border-white/10">
                             <span class="text-[10px] font-mono text-slate-400 pl-2">Схема поставки:</span>
                             <div class="flex gap-1">
@@ -389,33 +386,6 @@
                             </div>
                         </div>
 
-                        <!-- Мини-график продаж -->
-                        <div class="hud-glass p-2.5 rounded-xl border border-white/5 space-y-1.5">
-                            <div class="flex justify-between items-center text-[9px] font-mono text-slate-400">
-                                <span>Динамика продаж WB (Сезон 2026):</span>
-                                <span class="text-brand-emerald font-bold">Пик спроса ↑</span>
-                            </div>
-                            <svg class="w-full h-10 overflow-hidden" viewBox="0 0 300 50">
-                                <defs>
-                                    <linearGradient id="sparkGlow" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/>
-                                        <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
-                                    </linearGradient>
-                                </defs>
-                                <path d="M10,40 Q50,36 90,38 T170,22 T230,15 T275,10 L275,50 L10,50 Z" fill="url(#sparkGlow)"/>
-                                <path d="M10,40 Q50,36 90,38 T170,22 T230,15 T275,10" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
-                                
-                                <circle cx="275" cy="10" r="3.5" fill="#00F5FF">
-                                    <animate attributeName="r" values="3.5;6.5;3.5" dur="1.8s" repeatCount="indefinite"/>
-                                    <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite"/>
-                                </circle>
-                                <circle cx="275" cy="10" r="3" fill="#00F5FF"/>
-                            </svg>
-                            <div class="flex justify-between text-[8px] font-mono text-slate-500 pt-0.5">
-                                <span>Май</span><span>Июнь</span><span>Июль</span><span>Август</span><span class="text-brand-cyan font-bold">Сентябрь (Сейчас)</span>
-                            </div>
-                        </div>
-
                         <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 px-1 border-t border-white/5 pt-2">
                             <span>Прибыль со всей партии:</span>
                             <span class="text-white font-black text-xs font-mono" id="roi-net-profit">0 ₽</span>
@@ -428,7 +398,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <span class="text-xs font-bold text-white block" id="slider-title-label">Объем партии:</span>
-                            <span class="text-[10px] font-mono text-slate-400" id="box-quantity-hint">Квант: 5 шт</span>
+                            <span class="text-[10px] font-mono text-slate-400" id="box-quantity-hint">Квант: 1 шт</span>
                         </div>
                         <div class="flex items-center gap-1.5 hud-glass px-3 py-1.5 rounded-xl border border-brand-cyan/30">
                             <input type="number" id="slider-number-input" class="w-16 text-center font-mono font-black text-brand-cyan text-sm outline-none bg-transparent" oninput="onNumberInputChange(this.value)">
@@ -451,7 +421,7 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ТРЕКИНГА ГРУЗА (СО СВАЙПОМ) -->
+        <!-- МОДАЛЬНОЕ ОКНО ТРЕКИНГА ГРУЗА -->
         <div id="tracker-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="w-full max-w-md hud-glass bg-slate-950 rounded-t-[32px] p-5 pt-3 space-y-4 shadow-2xl transform translate-y-full transition-transform duration-300 border-t border-brand-cyan/30 select-none" id="tracker-sheet">
                 <div class="w-12 h-1.5 rounded-full bg-white/20 mx-auto cursor-grab mb-1"></div>
@@ -490,10 +460,9 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ ЗАКАЗА (СО СВАЙПОМ И EXCEL ЭКСПОРТОМ) -->
+        <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ ЗАКАЗА -->
         <div id="checkout-form" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex justify-center items-end opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="w-full max-w-md hud-glass bg-slate-950 rounded-t-[32px] p-5 pt-3 pb-8 space-y-4 max-h-[92vh] overflow-y-auto transform translate-y-full transition-transform duration-300 border-t border-brand-cyan/40 select-none" id="checkout-sheet">
-                
                 <div class="w-12 h-1.5 rounded-full bg-white/20 mx-auto cursor-grab mb-1"></div>
 
                 <div class="flex justify-between items-center pb-2 border-b border-white/10">
@@ -617,7 +586,7 @@
             }
         }
 
-        // ====================== СИНТЕЗИРОВАННЫЙ КИБЕР-ЗВУК (WEB AUDIO API) ======================
+        // ====================== СИНТЕЗИРОВАННЫЙ КИБЕР-ЗВУК ======================
         let audioCtx = null;
         function getAudioContext() {
             if (!audioCtx) {
@@ -775,141 +744,1672 @@
             calculateSellerROI();
         }
 
+        // ====================== КАТАЛОГ ТОВАРОВ AZAREK ======================
         let allProductsData = [
+            // --- БЕНЗОПИЛЫ ---
             {
-                id: 'az_tool_82',
+                id: 'az_stihl_ms180',
                 channel: 'main',
-                cat: 'Наборы инструментов',
-                title: 'Набор ручного инструмента 82 предмета',
-                desc: 'Флагман AZAREK. Хром-ванадиевая сталь 50CrV, трещотки 1/4 и 1/2 на 72 зуба, кейс с металлическими замками. 19-й км МКАД.',
-                price: 3000,
-                wb_price: 4990,
-                moq: 10,
-                box_qty: 5,
-                stock: 450,
-                badge: 'ХИТ ОПТА',
-                images: ['https://i.postimg.cc/Y9Xkz4sW/photo-2026-09-15-14-36-15.jpg'],
-                tiers: [
-                    { min: 10, price: 2150, label: 'от 10 шт' },
-                    { min: 100, price: 1950, label: 'от 100 шт' },
-                    { min: 300, price: 1850, label: 'от 300 шт' },
-                    { min: 500, price: 1750, label: 'от 500 шт' }
-                ]
-            },
-            {
-                id: 'az_brushless_drill_3in1',
-                channel: 'main',
-                cat: 'Шуруповерты и дрели',
-                title: 'Бесщеточные шуруповерты 3в1 (Bosch / Milwaukee / Makita)',
-                desc: '3 цвета. Ударный режим, 13 мм металлический патрон, 2 АКБ по 5 банок, фабричный кейс.',
-                price: 2300,
-                wb_price: 4200,
-                moq: 10,
-                box_qty: 5,
-                stock: 320,
-                badge: 'ТОП 2026',
-                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
-                tiers: [
-                    { min: 10, price: 1700, label: 'от 10 шт' },
-                    { min: 100, price: 1600, label: 'от 100 шт' },
-                    { min: 500, price: 1400, label: 'от 500 шт' }
-                ]
-            },
-            {
-                id: 'az_grinder_1600w',
-                channel: 'main',
-                cat: 'Специнструмент',
-                title: 'Болгарка 1600W с регулировкой оборотов 125мм',
-                desc: 'Корпус Bosch Style. Мощность 1600 Ватт, плавная регулировка скорости, 125 мм диск, боковая рукоять.',
-                price: 3600,
-                wb_price: 5900,
-                moq: 10,
-                box_qty: 5,
-                stock: 210,
-                badge: '1600W',
-                images: ['https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80'],
-                tiers: [
-                    { min: 10, price: 1900, label: 'от 10 шт' },
-                    { min: 100, price: 1800, label: 'от 100 шт' }
-                ]
-            },
-            {
-                id: 'az_giraffe_sander',
-                channel: 'main',
-                cat: 'Специнструмент',
-                title: 'Жираф — шлифмашина для стен и потолков',
-                desc: 'Телескопическая рукоять, LED-лента по периметру, гибкий шланг под строительный пылесос, кейс.',
-                price: 8600,
-                wb_price: 13900,
-                moq: 10,
-                box_qty: 1,
-                stock: 95,
-                badge: 'PRO SERIES',
-                images: ['https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80'],
-                tiers: [
-                    { min: 10, price: 6100, label: 'от 10 шт' },
-                    { min: 100, price: 5900, label: 'от 100 шт' }
-                ]
-            },
-            {
-                id: 'az_sliv_drill_cord',
-                channel: 'sliv',
-                cat: 'Сетевой инструмент',
-                title: 'Дрель сетевая Bosch [Слив]',
-                desc: 'Канал @azarek_sliv. 100% новая, проверена, штучный выкуп. Без торга.',
-                price: 1300,
-                wb_price: 2600,
+                cat: 'Бензопилы',
+                title: 'Бензопила STIHL MS 180',
+                desc: 'Надежная бензопила для дома и дачи. Дроп Авито: 6 100 ₽, WB/Ozon: 6 100 ₽. Наценка: +30.4%.',
+                price: 7300,
+                wb_price: 6100,
                 moq: 1,
                 box_qty: 1,
-                stock: 3,
-                badge: 'СЛИВ 1300₽',
-                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1300, label: 'Штучно: 1300 ₽' }]
+                stock: 45,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/MGVSSvTY/2026-09-18-12-42-42.png'],
+                tiers: [
+                    { min: 1, price: 5600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 5500, label: 'Опт от 5 кор' }
+                ]
             },
             {
-                id: 'az_sliv_shurik_defect',
-                channel: 'sliv',
-                cat: 'Аккумуляторный инструмент',
-                title: 'Шуруповерт 3в1 [Уценка кейса]',
-                desc: 'Сам инструмент новый и протестирован. Кейс треснул при разгрузке паллеты. 2 АКБ + зарядка.',
-                price: 1500,
+                id: 'az_stihl_ms250',
+                channel: 'main',
+                cat: 'Бензопилы',
+                title: 'Бензопила STIHL MS 250',
+                desc: 'Мощная модель для заготовки дров и строительства. Дроп Авито: 5 800 ₽, WB/Ozon: 5 900 ₽. Наценка: +27.3%.',
+                price: 7000,
+                wb_price: 5900,
+                moq: 1,
+                box_qty: 1,
+                stock: 38,
+                badge: 'ТОП ПРОДАЖ',
+                images: ['https://i.postimg.cc/MGVSSvTY/2026-09-18-12-42-42.png'],
+                tiers: [
+                    { min: 1, price: 5500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 5300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_chainsaw_bosch_20',
+                channel: 'main',
+                cat: 'Бензопилы',
+                title: 'Бензопила Bosch 3.53 л.с. (20" / 64 зв.)',
+                desc: 'Шина 20 дюймов, 64 звена, мощность 3.53 л.с. Дроп Авито: 5 200 ₽, WB/Ozon: 5 300 ₽. Наценка: +21.2%.',
+                price: 6000,
+                wb_price: 5300,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'ВЫГОДА',
+                images: ['https://i.postimg.cc/DfCRRqgR/2026-09-18-12-43-39.png'],
+                tiers: [
+                    { min: 1, price: 4950, label: 'Опт от 1 кор' },
+                    { min: 5, price: 4700, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- НАБОРЫ АККУМУЛЯТОРНОГО ИНСТРУМЕНТА ---
+            {
+                id: 'az_set_makita_2in1_wrench_grinder',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Makita 2в1 (Гайковерт + УШМ 18V)',
+                desc: 'Комплект 18V: ударный гайковерт + болгарка УШМ, кейс, 2 АКБ. Дроп Авито: 3 150 ₽, WB/Ozon: 3 200 ₽.',
+                price: 4000,
                 wb_price: 3200,
                 moq: 1,
                 box_qty: 1,
-                stock: 2,
-                badge: 'ТРЕЩИНА КЕЙСА',
-                images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1500, label: 'Штучно: 1500 ₽' }]
+                stock: 55,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/HxYPhx7T/2026-09-18-12-45-17.png'],
+                tiers: [
+                    { min: 1, price: 3000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2800, label: 'Опт от 5 кор' }
+                ]
             },
             {
-                id: 'az_sliv_laser_level',
+                id: 'az_set_makita_2in1_drill_grinder',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Makita 2в1 (Шуруповерт + УШМ 18V)',
+                desc: 'Универсальный набор: мощный шуруповерт + УШМ 18V. Дроп Авито: 3 150 ₽, WB/Ozon: 3 200 ₽. Наценка: +40.0%.',
+                price: 4200,
+                wb_price: 3200,
+                moq: 1,
+                box_qty: 1,
+                stock: 60,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/sXgwJNth/2026-09-18-12-46-36.png'],
+                tiers: [
+                    { min: 1, price: 3000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_dewalt_2in1_driver_drill',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'DeWalt 2в1 (Винтоверт + Шуруповерт 18V)',
+                desc: 'Комплект DeWalt 18V: импульсный винтоверт + шуруповерт. Дроп Авито: 3 700 ₽, WB/Ozon: 3 750 ₽.',
+                price: 4000,
+                wb_price: 3750,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'АКЦИЯ',
+                images: ['https://i.postimg.cc/8cq4NPsF/2026-09-18-12-46-59.png'],
+                tiers: [
+                    { min: 1, price: 3500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3400, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_bosch_2in1_grinder_drill',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Bosch 2в1 (Болгарка + Шуруповерт 18V)',
+                desc: 'Набор Bosch 18V: УШМ + шуруповерт, кейс, оснастка. Дроп Авито: 3 250 ₽, WB/Ozon: 3 300 ₽. Наценка: +45.2%.',
+                price: 4500,
+                wb_price: 3300,
+                moq: 1,
+                box_qty: 1,
+                stock: 48,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/MpJ5LTh3/2026-09-18-12-47-23.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_makita_4in1_blue',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Набор 4в1 Makita (синий кейс, 2 АКБ)',
+                desc: 'Шуруповерт, УШМ, перфоратор, гайковерт в фирменном кейсе. Дроп Авито: 5 800 ₽, WB/Ozon: 5 900 ₽.',
+                price: 7000,
+                wb_price: 5900,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'ТОП 4В1',
+                images: ['https://i.postimg.cc/wB0k3k78/2026-09-18-12-47-46.png'],
+                tiers: [
+                    { min: 1, price: 5500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 5400, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_makita_6in1_pro',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Набор аккум. 6в1 Makita PRO (4 АКБ)',
+                desc: 'Профессиональный набор на 6 инструментов, усиленная комплектация, 4 АКБ. Дроп Авито: 9 650 ₽, WB: 9 700 ₽.',
+                price: 12500,
+                wb_price: 9700,
+                moq: 1,
+                box_qty: 1,
+                stock: 22,
+                badge: 'PRO СЕРИЯ',
+                images: ['https://i.postimg.cc/T2yZMK4m/2026-09-18-12-48-20.png'],
+                tiers: [
+                    { min: 1, price: 9200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 9000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_makita_8in1_pro',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Набор аккум. 8в1 Makita PRO (2 АКБ)',
+                desc: 'Максимальный комплект на 8 позиций инструмента. Дроп Авито: 19 450 ₽, WB/Ozon: 19 500 ₽.',
+                price: 25000,
+                wb_price: 19500,
+                moq: 1,
+                box_qty: 1,
+                stock: 12,
+                badge: 'ПРЕМИУМ',
+                images: ['https://i.postimg.cc/jjdF82fK/2026-09-18-12-48-45.png'],
+                tiers: [
+                    { min: 1, price: 19000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 18500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_set_dewalt_4in1_premium',
+                channel: 'main',
+                cat: 'Наборы аккумуляторного инструмента',
+                title: 'Набор 4в1 DeWalt premium (2 АКБ)',
+                desc: 'Премиальный комплект DeWalt 4в1: шуруповерт, болгарка, гайковерт, перфоратор + 2 аккумулятора.',
+                price: 7500,
+                wb_price: 7600,
+                moq: 1,
+                box_qty: 1,
+                stock: 25,
+                badge: 'DEWALT',
+                images: ['https://i.postimg.cc/HW7Pvfrr/2026-09-18-12-49-24.png'],
+                tiers: [
+                    { min: 1, price: 7100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 7000, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- ЛИНЕЙКА MILWAUKEE ---
+            {
+                id: 'az_milwaukee_set_2in1',
+                channel: 'main',
+                cat: 'Линейка Milwaukee',
+                title: 'Набор 2в1 Milwaukee 36V (Гайковерт + УШМ)',
+                desc: 'Бесщеточная серия Milwaukee 36V: тяжелый гайковерт и болгарка. Дроп Авито: 5 900 ₽, WB: 6 000 ₽.',
+                price: 6000,
+                wb_price: 6000,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'MILWAUKEE',
+                images: ['https://i.postimg.cc/SRWdQb8F/2026-09-18-12-49-56.png'],
+                tiers: [
+                    { min: 1, price: 5600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 5500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_milwaukee_drill_88v',
+                channel: 'main',
+                cat: 'Линейка Milwaukee',
+                title: 'Шуруповерт Milwaukee 88V',
+                desc: 'Сверхмощный шуруповерт с высоким крутящим моментом, 2 АКБ. Дроп Авито: 3 450 ₽, WB: 3 550 ₽.',
+                price: 4000,
+                wb_price: 3550,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'МОЩЬ 88V',
+                images: ['https://i.postimg.cc/9frBR7TM/2026-09-18-12-50-27.png'],
+                tiers: [
+                    { min: 1, price: 3300, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_milwaukee_wrench_36v',
+                channel: 'main',
+                cat: 'Линейка Milwaukee',
+                title: 'Гайковерт Milwaukee 36V',
+                desc: 'Ударный гайковерт Milwaukee 36V под 1/2 квадрат. Дроп Авито: 3 450 ₽, WB: 3 550 ₽.',
+                price: 4000,
+                wb_price: 3550,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'MILWAUKEE',
+                images: ['https://i.postimg.cc/d3KRxNXM/2026-09-18-12-50-53.png'],
+                tiers: [
+                    { min: 1, price: 3300, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_milwaukee_grinder_36v',
+                channel: 'main',
+                cat: 'Линейка Milwaukee',
+                title: 'УШМ Milwaukee 36V',
+                desc: 'Аккумуляторная болгарка 125 мм 36V с плавной регулировкой оборотов. Дроп Авито: 3 450 ₽, WB: 3 550 ₽.',
+                price: 4500,
+                wb_price: 3550,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/fRbcp98p/2026-09-18-12-51-15.png'],
+                tiers: [
+                    { min: 1, price: 3300, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_milwaukee_set_4in1_premium',
+                channel: 'main',
+                cat: 'Линейка Milwaukee',
+                title: 'Набор 4в1 Milwaukee premium (2 АКБ)',
+                desc: 'Флагманский комплект инструмента Milwaukee премиум-класса, кейс, 2 АКБ. Дроп Авито: 10 100 ₽, WB: 10 250 ₽.',
+                price: 12000,
+                wb_price: 10250,
+                moq: 1,
+                box_qty: 1,
+                stock: 20,
+                badge: 'ТОП КОМПЛЕКТ',
+                images: ['https://i.postimg.cc/kghQmgZQ/2026-09-18-12-51-38.png'],
+                tiers: [
+                    { min: 1, price: 9600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 9300, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- ШУРУПОВЕРТЫ ---
+            {
+                id: 'az_drill_makita_18v_set',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт Makita 18V с набором',
+                desc: 'Компактный шуруповерт 18V с большим набором бит, головок и сверл в кейсе. Наценка: +66.7%.',
+                price: 2000,
+                wb_price: 1300,
+                moq: 1,
+                box_qty: 1,
+                stock: 120,
+                badge: 'МЕГАХИТ',
+                images: ['https://i.postimg.cc/2jFn5wMN/2026-09-18-12-52-13.png'],
+                tiers: [
+                    { min: 1, price: 1200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_dewalt_48v',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт DeWalt 48V',
+                desc: 'Популярная модель с набором оснастки и 2 АКБ. Дроп Авито: 1 250 ₽, WB/Ozon: 1 300 ₽. Наценка: +66.7%.',
+                price: 2000,
+                wb_price: 1300,
+                moq: 1,
+                box_qty: 1,
+                stock: 110,
+                badge: 'МЕГАХИТ',
+                images: ['https://i.postimg.cc/QdV70rtt/2026-09-18-12-52-33.png'],
+                tiers: [
+                    { min: 1, price: 1200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_bosch_18v_premium',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт Bosch 18V premium',
+                desc: 'Надежный премиум шуруповерт Bosch 18V для любых бытовых и монтажных задач. Дроп: 1 600 ₽.',
+                price: 2000,
+                wb_price: 1600,
+                moq: 1,
+                box_qty: 1,
+                stock: 85,
+                badge: 'ТОП ЦЕНА',
+                images: ['https://i.postimg.cc/j5YJxwhV/2026-09-18-12-52-56.png'],
+                tiers: [
+                    { min: 1, price: 1500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_bosch_48v_brushless',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт Bosch 48V бесщеточный',
+                desc: 'Бесщеточный надежный двигатель, металлический патрон, высокий крутящий момент. Дроп WB: 2 500 ₽.',
+                price: 3000,
+                wb_price: 2500,
+                moq: 1,
+                box_qty: 1,
+                stock: 70,
+                badge: 'БЕСЩЕТОЧНЫЙ',
+                images: ['https://i.postimg.cc/ZnV9xfz4/2026-09-18-12-53-16.png'],
+                tiers: [
+                    { min: 1, price: 2350, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2250, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_makita_36v_impact',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт ударный Makita 36V',
+                desc: 'Ударная функция, режим сверления и заворачивания, мощная батарея 36V. Дроп WB/Ozon: 3 300 ₽.',
+                price: 4000,
+                wb_price: 3300,
+                moq: 1,
+                box_qty: 1,
+                stock: 65,
+                badge: 'УДАРНЫЙ',
+                images: ['https://i.postimg.cc/Jzyyjc6R/2026-09-18-12-53-38.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_makita_48v_brushless',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт Makita 48V бесщеточный',
+                desc: 'Долговечный бесщеточный мотор, отличная развесовка, кейс и 2 АКБ. Дроп Авито: 2 450 ₽.',
+                price: 3000,
+                wb_price: 2500,
+                moq: 1,
+                box_qty: 1,
+                stock: 80,
+                badge: 'БЕСЩЕТОЧНЫЙ',
+                images: ['https://i.postimg.cc/Jzyyjc6R/2026-09-18-12-53-38.png'],
+                tiers: [
+                    { min: 1, price: 2350, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2250, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_dewalt_ice_auger_18v',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Ледобур DeWalt 18V усиленный',
+                desc: 'Усиленный редуктор под шнек ледобура для зимней рыбалки и тяжелого бурения. Дроп WB: 4 050 ₽.',
+                price: 4250,
+                wb_price: 4050,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ЛЕДОБУР',
+                images: ['https://i.postimg.cc/L65hM3MV/2026-09-18-12-54-22.png'],
+                tiers: [
+                    { min: 1, price: 3800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3750, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_drill_dewalt_48v_brushless',
+                channel: 'main',
+                cat: 'Шуруповерты',
+                title: 'Шуруповерт DeWalt 48V бесщеточный',
+                desc: 'Профессиональный бесщеточный шуруповерт с патроном 13 мм. Дроп Авито: 2 450 ₽, WB: 2 500 ₽.',
+                price: 3000,
+                wb_price: 2500,
+                moq: 1,
+                box_qty: 1,
+                stock: 90,
+                badge: 'БЕСЩЕТОЧНЫЙ',
+                images: ['https://i.postimg.cc/L65hM3MV/2026-09-18-12-54-22.png'],
+                tiers: [
+                    { min: 1, price: 2350, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2250, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- УШМ, БОЛГАРКИ И ШЛИФМАШИНЫ ---
+            {
+                id: 'az_grinder_dewalt_18v_akk',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ аккум. DeWalt 18V',
+                desc: 'Беспроводная болгарка 125 мм на 18V. В комплекте 2 АКБ, зарядное устройство и кейс. Дроп: 2 550 ₽.',
+                price: 3000,
+                wb_price: 2550,
+                moq: 1,
+                box_qty: 1,
+                stock: 50,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/fyLWDD19/2026-09-18-12-54-54.png'],
+                tiers: [
+                    { min: 1, price: 2400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_makita_18v_akk',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ аккум. Makita 18V',
+                desc: 'Аккумуляторная угловая шлифмашина Makita 18V под диск 125 мм. Дроп Авито: 2 500 ₽, WB: 2 550 ₽.',
+                price: 3000,
+                wb_price: 2550,
+                moq: 1,
+                box_qty: 1,
+                stock: 55,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/ncNVf82c/2026-09-18-12-55-16.png'],
+                tiers: [
+                    { min: 1, price: 2400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_sander_dewalt_dwe6431',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Шлифмашина DeWalt DWE 6431',
+                desc: 'Эксцентриковая шлифмашина 125 мм с пылесборником и плавной регулировкой оборотов.',
+                price: 2600,
+                wb_price: 2150,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'ЭШМ',
+                images: ['https://i.postimg.cc/9fYc9Dhm/2026-09-18-12-55-40.png'],
+                tiers: [
+                    { min: 1, price: 2000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_sander_makita_bo5041',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Шлифмашина Makita BO5041',
+                desc: 'Орбитальная шлифовальная машина с эргономичной рукояткой. Дроп Авито: 2 100 ₽, WB: 2 150 ₽.',
+                price: 2600,
+                wb_price: 2150,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ЭШМ',
+                images: ['https://i.postimg.cc/C5z09JfS/2026-09-18-12-56-03.png'],
+                tiers: [
+                    { min: 1, price: 2000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_sander_bosch_gex300',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Шлифмашина Bosch GEX-300-1SA',
+                desc: 'Эксцентриковая шлифмашинка Bosch. Идеально для чистовой обработки древесины и металла.',
+                price: 2600,
+                wb_price: 2150,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'ЭШМ',
+                images: ['https://i.postimg.cc/yxtKK9FQ/2026-09-18-12-56-26.png'],
+                tiers: [
+                    { min: 1, price: 2000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_makita_1600w_net',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Болгарка Makita 1600 Вт (сеть)',
+                desc: 'Мощная сетевая углошлифовальная машина 1600 Вт с регулировкой скорости. Дроп WB: 2 250 ₽.',
+                price: 2800,
+                wb_price: 2250,
+                moq: 1,
+                box_qty: 1,
+                stock: 60,
+                badge: '1600 ВТ',
+                images: ['https://i.postimg.cc/6pdKs8Tf/2026-09-18-12-56-46.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_bosch_230mm',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Болгарка Bosch 230 мм',
+                desc: 'Тяжелая сетевая УШМ под отрезной диск 230 мм с поворотной рукояткой. Дроп WB: 4 900 ₽.',
+                price: 5200,
+                wb_price: 4900,
+                moq: 1,
+                box_qty: 1,
+                stock: 25,
+                badge: '230 ММ',
+                images: ['https://i.postimg.cc/qR7HCQwc/2026-09-18-12-57-08.png'],
+                tiers: [
+                    { min: 1, price: 4600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 4500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_makita_230mm',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Шлифмашинка Makita 230 мм',
+                desc: 'Сетевая болгарка 230 мм Makita. Высокая надежность и защита от пыли. Дроп Авито: 3 550 ₽.',
+                price: 4200,
+                wb_price: 3600,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: '230 ММ',
+                images: ['https://i.postimg.cc/Vv3xpw8G/2026-09-18-12-57-26.png'],
+                tiers: [
+                    { min: 1, price: 3400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_makita_ag5030_100mm',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ сеть 100 мм Makita AG5030',
+                desc: 'Тонкий и компактный корпус, диаметр круга 100 мм. Дроп Авито/WB: 1 700 ₽. Наценка: +37.5%.',
+                price: 2200,
+                wb_price: 1700,
+                moq: 1,
+                box_qty: 1,
+                stock: 75,
+                badge: '100 ММ',
+                images: ['https://i.postimg.cc/JzWwQRKk/2026-09-18-12-57-43.png'],
+                tiers: [
+                    { min: 1, price: 1600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_makita_hn9558_125mm',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ сеть 125 мм Makita HN9558',
+                desc: 'Классическая сетевая УШМ 125 мм. Надежный пылезащищенный двигатель. Дроп: 1 700 ₽.',
+                price: 2000,
+                wb_price: 1700,
+                moq: 1,
+                box_qty: 1,
+                stock: 80,
+                badge: 'ТОП ВЫБОР',
+                images: ['https://i.postimg.cc/cJXVZwWK/2026-09-18-12-58-02.png'],
+                tiers: [
+                    { min: 1, price: 1600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_bosch_gws850_125mm',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ сеть 125 мм Bosch GWS 850',
+                desc: 'Сетевая болгарка 850 Вт под 125 мм круг. Дроп Авито: 2 000 ₽, WB/Ozon: 2 050 ₽.',
+                price: 2500,
+                wb_price: 2050,
+                moq: 1,
+                box_qty: 1,
+                stock: 70,
+                badge: 'BOSCH',
+                images: ['https://i.postimg.cc/D0bDqNX9/2026-09-18-12-58-29.png'],
+                tiers: [
+                    { min: 1, price: 1900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_bosch_1600w',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'УШМ Bosch 1600W',
+                desc: 'Сетевая УШМ повышенной мощности 1600 Вт для тяжелых отрезных работ. Дроп WB: 3 300 ₽.',
+                price: 3600,
+                wb_price: 3300,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: '1600W',
+                images: ['https://i.postimg.cc/qM2Brb5c/2026-09-18-12-58-52.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_engraver_dewalt_flex',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Гравер DeWalt с гибким валом',
+                desc: 'Бормашина / гравер DeWalt с гибким валом и комплектом цанг и насадок в кейсе.',
+                price: 2700,
+                wb_price: 2250,
+                moq: 1,
+                box_qty: 1,
+                stock: 50,
+                badge: 'ГРАВЕР',
+                images: ['https://i.postimg.cc/3wx3gKJC/2026-09-18-12-59-14.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_engraver_makita_flex',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Гравер Makita с гибким валом',
+                desc: 'Многофункциональный гравер Makita, регулировка оборотов, гибкий вал в комплекте.',
+                price: 2900,
+                wb_price: 2500,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ГРАВЕР',
+                images: ['https://i.postimg.cc/xCkY4tmy/2026-09-18-12-59-37.png'],
+                tiers: [
+                    { min: 1, price: 2350, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_engraver_bosch_flex',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Гравер Bosch с гибким валом',
+                desc: 'Мини-дрель / гравер Bosch с гибким валом, регулируемые обороты. Дроп WB: 2 250 ₽.',
+                price: 2700,
+                wb_price: 2250,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ГРАВЕР',
+                images: ['https://i.postimg.cc/59Cb5Kb4/2026-09-18-12-59-58.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_grinder_dewalt_18v_angle',
+                channel: 'main',
+                cat: 'УШМ, болгарки и шлифмашины',
+                title: 'Болгарка DeWalt 18V (косая)',
+                desc: 'Аккумуляторная УШМ DeWalt с эргономичной косой ручкой. Дроп Авито: 3 550 ₽, WB: 3 650 ₽.',
+                price: 4200,
+                wb_price: 3650,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'NEW',
+                images: ['https://i.postimg.cc/3wqQmmqR/2026-09-18-13-00-21.png'],
+                tiers: [
+                    { min: 1, price: 3400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3300, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- ЛАЗЕРНЫЕ УРОВНИ И ГАЙКОВЕРТЫ ---
+            {
+                id: 'az_level_bosch_16_4d',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Уровень Bosch 16 лучей 4D',
+                desc: 'Зеленый луч 4D 360°, 16 линий, пульт ДУ, настенный кронштейн и подъемная платформа.',
+                price: 3500,
+                wb_price: 2700,
+                moq: 1,
+                box_qty: 1,
+                stock: 80,
+                badge: 'ХИТ 16 ЛУЧЕЙ',
+                images: ['https://i.postimg.cc/sxpkk8gf/2026-09-18-13-00-50.png'],
+                tiers: [
+                    { min: 1, price: 2500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_level_makita_4d_tripod',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Уровень Makita 4D с треногой',
+                desc: 'Лазерный нивелир 4D 16 лучей зеленый луч + компактная тренога в кейсе. Наценка: +40.0%.',
+                price: 3500,
+                wb_price: 2700,
+                moq: 1,
+                box_qty: 1,
+                stock: 75,
+                badge: 'С ТРЕНОГОЙ',
+                images: ['https://i.postimg.cc/02vRY8VZ/2026-09-18-13-01-11.png'],
+                tiers: [
+                    { min: 1, price: 2500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_level_dewalt_4d_tripod',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Уровень DeWalt 4D с треногой',
+                desc: '16 линий зеленый луч, высокая точность, кейс, тренога и 2 АКБ. Дроп Авито: 2 650 ₽.',
+                price: 3500,
+                wb_price: 2700,
+                moq: 1,
+                box_qty: 1,
+                stock: 80,
+                badge: 'С ТРЕНОГОЙ',
+                images: ['https://i.postimg.cc/wjWCYDgy/2026-09-18-13-01-31.png'],
+                tiers: [
+                    { min: 1, price: 2500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2300, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_dewalt_220v',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Сетевой гайковерт DeWalt 220V',
+                desc: 'Сетевой ударный гайковерт для шиномонтажа и гаража. Высокий крутящий момент от сети 220V.',
+                price: 4200,
+                wb_price: 3400,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'СЕТЬ 220V',
+                images: ['https://i.postimg.cc/W3ZCZKrh/2026-09-18-13-01-54.png'],
+                tiers: [
+                    { min: 1, price: 3200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_bosch_220v',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Сетевой гайковерт Bosch 220V',
+                desc: 'Электрический ударный гайковерт Bosch 220V в пластиковом кейсе. Дроп Авито: 3 350 ₽.',
+                price: 4200,
+                wb_price: 3400,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'СЕТЬ 220V',
+                images: ['https://i.postimg.cc/8cBYK6Zv/2026-09-18-13-02-15.png'],
+                tiers: [
+                    { min: 1, price: 3200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_makita_220v',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Сетевой гайковерт Makita 220V',
+                desc: 'Надежный сетевой ударный гайковерт Makita под стандартный квадрат 1/2". Дроп WB: 3 400 ₽.',
+                price: 4200,
+                wb_price: 3400,
+                moq: 1,
+                box_qty: 1,
+                stock: 38,
+                badge: 'СЕТЬ 220V',
+                images: ['https://i.postimg.cc/vHhj55gY/2026-09-18-13-02-36.png'],
+                tiers: [
+                    { min: 1, price: 3200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3000, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_makita_18v_set',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Гайковерт Makita 18V с набором',
+                desc: 'Бесщеточный ударный гайковерт 18V, 2 АКБ, набор головок и кейс. Дроп: 2 900 ₽.',
+                price: 3600,
+                wb_price: 2900,
+                moq: 1,
+                box_qty: 1,
+                stock: 65,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/T3H44GJs/2026-09-18-13-02-58.png'],
+                tiers: [
+                    { min: 1, price: 2700, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_dewalt_18v_set',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Гайковерт DeWalt 18V с набором',
+                desc: 'Аккумуляторный гайковерт DeWalt 18V с набором головок, переходников и кейсом.',
+                price: 3600,
+                wb_price: 2900,
+                moq: 1,
+                box_qty: 1,
+                stock: 60,
+                badge: 'ХИТ',
+                images: ['https://i.postimg.cc/rpBYqJbD/2026-09-18-13-03-15.png'],
+                tiers: [
+                    { min: 1, price: 2700, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_angle_dewalt_18v',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Угловой гайковерт DeWalt 18V',
+                desc: 'Аккумуляторная угловая трещотка 18V для труднодоступных мест под капотом. Дроп: 2 550 ₽.',
+                price: 3200,
+                wb_price: 2550,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'УГЛОВОЙ',
+                images: ['https://i.postimg.cc/rpBYqJbD/2026-09-18-13-03-15.png'],
+                tiers: [
+                    { min: 1, price: 2400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_wrench_angle_dewalt_36v',
+                channel: 'main',
+                cat: 'Лазерные уровни и гайковерты',
+                title: 'Угловой гайковерт DeWalt 36V',
+                desc: 'Угловой гайковерт/трещотка 36V с увеличенной мощностью и крутящим моментом.',
+                price: 3500,
+                wb_price: 2750,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'УГЛОВОЙ 36V',
+                images: ['https://i.postimg.cc/mD3VBGCv/2026-09-18-13-04-00.png'],
+                tiers: [
+                    { min: 1, price: 2600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2400, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- МИКСЕРЫ И ПЕРФОРАТОРЫ ---
+            {
+                id: 'az_mixer_akk_premium',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Миксер аккумуляторный premium',
+                desc: 'Строительный аккумуляторный миксер для смесей и растворов. Дроп Авито: 3 550 ₽, WB: 3 600 ₽.',
+                price: 4500,
+                wb_price: 3600,
+                moq: 1,
+                box_qty: 1,
+                stock: 25,
+                badge: 'ПРЕМИУМ',
+                images: ['https://i.postimg.cc/445w0sJf/2026-09-18-13-04-46.png'],
+                tiers: [
+                    { min: 1, price: 3400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_mixer_makita_net',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Миксер Makita (сеть)',
+                desc: 'Двуручный сетевой миксер Makita для перемешивания бетона, клея и красок. Дроп: 3 100 ₽.',
+                price: 3800,
+                wb_price: 3100,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'СЕТЬ',
+                images: ['https://i.postimg.cc/c4khshtg/2026-09-18-13-05-06.png'],
+                tiers: [
+                    { min: 1, price: 2900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2700, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_mixer_dewalt_net',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Миксер DeWalt (сеть)',
+                desc: 'Мощный сетевой миксер DeWalt со шнеком в комплекте. Дроп Авито: 3 050 ₽, WB: 3 100 ₽.',
+                price: 3800,
+                wb_price: 3100,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'СЕТЬ',
+                images: ['https://i.postimg.cc/N0mkkwJh/2026-09-18-13-05-26.png'],
+                tiers: [
+                    { min: 1, price: 2900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2700, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_mixer_bosch_net',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Миксер Bosch (сеть)',
+                desc: 'Надежный сетевой строительный миксер Bosch с эргономичными рукоятками.',
+                price: 3800,
+                wb_price: 3100,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'СЕТЬ',
+                images: ['https://i.postimg.cc/bJR049jv/2026-09-18-13-05-41.png'],
+                tiers: [
+                    { min: 1, price: 2900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2700, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_bosch_2_28',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор Bosch 2-28 с патроном',
+                desc: 'Перфоратор SDS-Plus Bosch GBH 2-28 со сменным быстрозажимным патроном в кейсе.',
+                price: 3900,
+                wb_price: 3100,
+                moq: 1,
+                box_qty: 1,
+                stock: 50,
+                badge: 'С ПАТРОНОМ',
+                images: ['https://i.postimg.cc/28ydXWc7/2026-09-18-13-06-07.png'],
+                tiers: [
+                    { min: 1, price: 2900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2700, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_bosch_2_26_burs',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор Bosch 2-26 с бурами',
+                desc: 'Популярный перфоратор Bosch 2-26 SDS-Plus с набором буров и пик в кейсе. Наценка: +35.7%.',
+                price: 3800,
+                wb_price: 3000,
+                moq: 1,
+                box_qty: 1,
+                stock: 65,
+                badge: 'С БУРАМИ',
+                images: ['https://i.postimg.cc/HLwb79nn/2026-09-18-13-06-31.png'],
+                tiers: [
+                    { min: 1, price: 2800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2600, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_gbh_2_26_dre',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор GBH 2-26 DRE',
+                desc: 'Трехрежимный сетевой перфоратор GBH 2-26 DRE. Надежная рабочая лошадка строителя.',
+                price: 3600,
+                wb_price: 2900,
+                moq: 1,
+                box_qty: 1,
+                stock: 55,
+                badge: 'КЛАССИКА',
+                images: ['https://i.postimg.cc/NFMXSh4y/2026-09-18-13-06-50.png'],
+                tiers: [
+                    { min: 1, price: 2700, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_makita_2470',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор Makita 2470',
+                desc: 'Легендарный перфоратор Makita HR 2470 SDS-Plus. Дроп Авито: 2 850 ₽, WB/Ozon: 2 900 ₽.',
+                price: 3600,
+                wb_price: 2900,
+                moq: 1,
+                box_qty: 1,
+                stock: 90,
+                badge: 'ТОП ВЫБОР',
+                images: ['https://i.postimg.cc/YCgWJz13/2026-09-18-13-07-08.png'],
+                tiers: [
+                    { min: 1, price: 2700, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_dewalt_d25123',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор DeWalt D25123',
+                desc: 'Сетевой трехрежимный перфоратор DeWalt SDS-Plus в кейсе. Дроп WB: 3 100 ₽.',
+                price: 3900,
+                wb_price: 3100,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'DEWALT',
+                images: ['https://i.postimg.cc/3wFDwrfX/2026-09-18-13-07-31.png'],
+                tiers: [
+                    { min: 1, price: 2900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2700, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_makita_akk_sds',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор Makita аккум. SDS+',
+                desc: 'Беспроводной аккумуляторный перфоратор SDS-Plus с 2 емкими аккумуляторами и кейсом.',
+                price: 5000,
+                wb_price: 4100,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'АКБ SDS+',
+                images: ['https://i.postimg.cc/pLN9Y5gF/2026-09-18-13-07-50.png'],
+                tiers: [
+                    { min: 1, price: 3800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_perforator_dewalt_sds_max',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Перфоратор DeWalt SDS-Max',
+                desc: 'Тяжелый перфоратор SDS-Max для бурения крупных отверстий и демонтажных задач.',
+                price: 7500,
+                wb_price: 6200,
+                moq: 1,
+                box_qty: 1,
+                stock: 20,
+                badge: 'SDS-MAX',
+                images: ['https://i.postimg.cc/MGqvg2Zv/2026-09-18-13-08-19.png'],
+                tiers: [
+                    { min: 1, price: 5800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 5500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_hammer_makita_sds_max',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Отбойный молоток Makita SDS-Max',
+                desc: 'Тяжелый сетевой отбойник Makita SDS-Max с мощным ударом для долбления бетона.',
+                price: 9500,
+                wb_price: 7400,
+                moq: 1,
+                box_qty: 1,
+                stock: 15,
+                badge: 'ОТБОЙНИК',
+                images: ['https://i.postimg.cc/B6wb8jTb/2026-09-18-13-08-35.png'],
+                tiers: [
+                    { min: 1, price: 7000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 6500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_hammer_dewalt',
+                channel: 'main',
+                cat: 'Миксеры и перфораторы',
+                title: 'Отбойный молоток DeWalt',
+                desc: 'Промышленный отбойный молоток DeWalt в кейсе. Дроп Авито: 7 300 ₽, WB: 7 400 ₽.',
+                price: 9500,
+                wb_price: 7400,
+                moq: 1,
+                box_qty: 1,
+                stock: 15,
+                badge: 'ОТБОЙНИК',
+                images: ['https://i.postimg.cc/fWpkD0Wr/2026-09-18-13-08-53.png'],
+                tiers: [
+                    { min: 1, price: 7000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 6500, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- ПИЛЫ, ЛОБЗИКИ И СУЧКОРЕЗЫ ---
+            {
+                id: 'az_saw_circular_makita_hs7000',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Циркулярка Makita HS7000 (185 мм)',
+                desc: 'Дисковая пила 185 мм сетевая Makita HS7000. Дроп Авито: 3 150 ₽, WB: 3 200 ₽. Наценка: +40.0%.',
+                price: 4200,
+                wb_price: 3200,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ЦИРКУЛЯРКА',
+                images: ['https://i.postimg.cc/nhHXPfhz/2026-09-18-13-11-57.png'],
+                tiers: [
+                    { min: 1, price: 3000, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_saw_circular_makita_laser',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Циркулярка Makita (с лазером)',
+                desc: 'Сетевая дисковая циркулярная пила с лазерным маркером для точного раскроя древесины.',
+                price: 4400,
+                wb_price: 3300,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'С ЛАЗЕРОМ',
+                images: ['https://i.postimg.cc/FKz7hbc1/2026-09-18-13-12-14.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_saw_circular_makita_akk_165',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Циркулярка аккум. Makita 165 мм',
+                desc: 'Беспроводная дисковая пила Makita под диск 165 мм, 2 АКБ. Дроп WB: 4 400 ₽.',
+                price: 5500,
+                wb_price: 4400,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'АКБ 165 ММ',
+                images: ['https://i.postimg.cc/j5J27sZ1/2026-09-18-13-12-34.png'],
+                tiers: [
+                    { min: 1, price: 4100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_jigsaw_makita_650w_net',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Электролобзик Makita 650W (сеть)',
+                desc: 'Сетевой маятниковый лобзик 650 Вт с регулировкой частоты хода. Наценка: +42.9%.',
+                price: 3000,
+                wb_price: 2250,
+                moq: 1,
+                box_qty: 1,
+                stock: 55,
+                badge: 'ЛОБЗИК',
+                images: ['https://i.postimg.cc/gc8rc2wY/2026-09-18-13-12-50.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_jigsaw_dewalt_akk_yellow',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Лобзик аккум. DeWalt (желтый кейс)',
+                desc: 'Аккумуляторный лобзик DeWalt в фирменном кейсе с двумя аккумуляторами. Дроп: 4 200 ₽.',
+                price: 5200,
+                wb_price: 4200,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'АКБ ЛОБЗИК',
+                images: ['https://i.postimg.cc/TYx1KvgM/2026-09-18-13-07.png'],
+                tiers: [
+                    { min: 1, price: 3900, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3600, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_pruner_makita_6in_akk',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Сучкорез 6" Makita АКБ',
+                desc: 'Мини цепная пила-сучкорез 6 дюймов на АКБ. Удобно для сада. Наценка: +69.2%.',
+                price: 2200,
+                wb_price: 1450,
+                moq: 1,
+                box_qty: 1,
+                stock: 100,
+                badge: 'ХИТ ПРОДАЖ',
+                images: ['https://i.postimg.cc/nhRhSs5Z/2026-09-18-13-13-21.png'],
+                tiers: [
+                    { min: 1, price: 1300, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_pruner_makita_8in_oil_akk',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Сучкорез 8" Makita АКБ (с маслом)',
+                desc: 'Аккумуляторный сучкорез 8 дюймов с бачком автоматической смазки цепи. Дроп: 2 300 ₽.',
+                price: 3200,
+                wb_price: 2300,
+                moq: 1,
+                box_qty: 1,
+                stock: 70,
+                badge: 'С МАСЛОМ 8"',
+                images: ['https://i.postimg.cc/rmWypfwv/2026-09-18-13-13-41.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1950, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_chainsaw_makita_12in_akk',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Цепная пила 12" Makita АКБ',
+                desc: 'Беспроводная цепная пила с шиной 12 дюймов (30 см). Дроп Авито: 3 300 ₽, WB: 3 400 ₽.',
+                price: 4500,
+                wb_price: 3400,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'ПИЛА 12"',
+                images: ['https://i.postimg.cc/rmWypfwv/2026-09-18-13-13-41.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_chainsaw_makita_16in_akk',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Цепная пила 16" Makita АКБ (40 см)',
+                desc: 'Полноразмерная цепная аккумуляторная пила 16 дюймов (40 см), 2 мощных аккумулятора.',
+                price: 6200,
+                wb_price: 4850,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'ПИЛА 16"',
+                images: ['https://i.postimg.cc/gk4zrXGd/2026-09-18-13-14-07.png'],
+                tiers: [
+                    { min: 1, price: 4500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 4200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_saw_saber_dewalt_24v',
+                channel: 'main',
+                cat: 'Пилы, лобзики и сучкорезы',
+                title: 'Сабельная пила DeWalt 24V АКБ',
+                desc: 'Аккумуляторная ножовка / сабельная пила DeWalt 24V с полотнами по дереву и металлу.',
+                price: 4200,
+                wb_price: 3300,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'САБЕЛЬНАЯ',
+                images: ['https://i.postimg.cc/vmxbP0f9/2026-09-18-13-14-24.png'],
+                tiers: [
+                    { min: 1, price: 3100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2800, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- ФРЕЗЕРЫ, РУБАНКИ И САДОВЫЙ ИНСТРУМЕНТ ---
+            {
+                id: 'az_router_makita_3709',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Фрезер кромочный Makita 3709',
+                desc: 'Компактный кромочный фрезер Makita 3709 для точной обработки кромок и снятия фасок.',
+                price: 3600,
+                wb_price: 2800,
+                moq: 1,
+                box_qty: 1,
+                stock: 40,
+                badge: 'КРОМОЧНИК',
+                images: ['https://i.postimg.cc/8CRnPWSS/2026-09-18-13-17-51.png'],
+                tiers: [
+                    { min: 1, price: 2600, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2400, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_router_makita_3612c',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Фрезер Makita 3612C (12 мм)',
+                desc: 'Мощный погружной фрезер с цангой 12 мм, точной настройкой глубины фрезерования.',
+                price: 5800,
+                wb_price: 4550,
+                moq: 1,
+                box_qty: 1,
+                stock: 25,
+                badge: 'ЦАНГА 12 ММ',
+                images: ['https://i.postimg.cc/0QZW7sjp/2026-09-18-13-18-06.png'],
+                tiers: [
+                    { min: 1, price: 4200, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3800, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_planer_makita_82mm_akk',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Рубанок аккум. Makita 82 мм',
+                desc: 'Аккумуляторный электрический рубанок 82 мм. Высокая мобильность, 2 АКБ в комплекте.',
+                price: 4800,
+                wb_price: 3800,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'АКБ РУБАНОК',
+                images: ['https://i.postimg.cc/ZnMwDxr6/2026-09-18-13-18-22.png'],
+                tiers: [
+                    { min: 1, price: 3500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_planer_makita_kp0800_net',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Рубанок Makita KP0800 (сеть)',
+                desc: 'Сетевой рубанок Makita 82 мм с лезвиями из быстрорежущей стали. Дроп WB: 3 000 ₽.',
+                price: 3900,
+                wb_price: 3000,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'СЕТЬ',
+                images: ['https://i.postimg.cc/zXytH4rg/2026-09-18-13-18-43.png'],
+                tiers: [
+                    { min: 1, price: 2800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2600, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_secateurs_makita_akk',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Секатор аккум. Makita',
+                desc: 'Аккумуляторный садовый секатор для легкой обрезки веток до 30 мм. Дроп: 3 800 ₽.',
+                price: 4800,
+                wb_price: 3800,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'САДОВЫЙ ХИТ',
+                images: ['https://i.postimg.cc/90rpTws1/2026-09-18-13-19-36.png'],
+                tiers: [
+                    { min: 1, price: 3500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_trimmer_makita_akk',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Триммер аккум. Makita',
+                desc: 'Легкий беспроводной садовый триммер для травы с телескопической штангой. Наценка: +45.8%.',
+                price: 3500,
+                wb_price: 2600,
+                moq: 1,
+                box_qty: 1,
+                stock: 50,
+                badge: 'ТРИММЕР',
+                images: ['https://i.postimg.cc/WzC77bv6/2026-09-18-13-19-51.png'],
+                tiers: [
+                    { min: 1, price: 2400, label: 'Опт от 1 кор' },
+                    { min: 5, price: 2200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_trimmer_dewalt_brushless',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Триммер аккум. бесщеточный DeWalt',
+                desc: 'Бесщеточный аккумуляторный триммер DeWalt увеличенной мощности. Дроп WB: 3 850 ₽.',
+                price: 4900,
+                wb_price: 3850,
+                moq: 1,
+                box_qty: 1,
+                stock: 35,
+                badge: 'БЕСЩЕТОЧНЫЙ',
+                images: ['https://i.postimg.cc/c4thLYRm/2026-09-18-13-20-10.png'],
+                tiers: [
+                    { min: 1, price: 3500, label: 'Опт от 1 кор' },
+                    { min: 5, price: 3200, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_trimmer_petrol_stihl',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Триммер бензиновый Stihl',
+                desc: 'Надежная бензокоса Stihl для скашивания жесткой травы и мелкого кустарника. Дроп: 5 200 ₽.',
+                price: 6500,
+                wb_price: 5200,
+                moq: 1,
+                box_qty: 1,
+                stock: 30,
+                badge: 'БЕНЗОКОСА',
+                images: ['https://i.postimg.cc/Qdpqp3nB/2026-09-18-13-20-28.png'],
+                tiers: [
+                    { min: 1, price: 4800, label: 'Опт от 1 кор' },
+                    { min: 5, price: 4500, label: 'Опт от 5 кор' }
+                ]
+            },
+            {
+                id: 'az_spray_gun_makita_akk',
+                channel: 'main',
+                cat: 'Фрезеры, рубанки и садовый инструмент',
+                title: 'Краскопульт аккум. Makita',
+                desc: 'Аккумуляторный электрический распылитель краски Makita со сменными соплами. Наценка: +42.9%.',
+                price: 3000,
+                wb_price: 2300,
+                moq: 1,
+                box_qty: 1,
+                stock: 45,
+                badge: 'КРАСКОПУЛЬТ',
+                images: ['https://i.postimg.cc/fbCjrvN5/2026-09-18-13-20-44.png'],
+                tiers: [
+                    { min: 1, price: 2100, label: 'Опт от 1 кор' },
+                    { min: 5, price: 1900, label: 'Опт от 5 кор' }
+                ]
+            },
+
+            // --- КАНАЛ СЛИВ (УЦЕНКА / ДЕФЕКТЫ) ---
+            {
+                id: 'az_sliv_tushki_4in1',
                 channel: 'sliv',
-                cat: 'Измерительный инструмент',
-                title: 'Лазерный нивелир 4D 16 линий [Уценка]',
-                desc: 'Зеленый луч, пульт, 2 аккумулятора, микролифт. Точность лучей откалибрована. Скол на замке кейса.',
-                price: 1800,
-                wb_price: 3900,
+                cat: 'Слив',
+                title: 'Тушки без АКБ (болгарка, циркулярка, перфоратор, гайковерт)',
+                desc: 'Набор тушек инструмента без аккумуляторов. Дефект: сломана ручка на циркулярке.',
+                price: 3200,
+                wb_price: 3200,
                 moq: 1,
                 box_qty: 1,
                 stock: 1,
-                badge: 'УЦЕНКА 1800₽',
-                images: ['https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 1800, label: 'Штучно: 1800 ₽' }]
+                badge: 'СЛИВ ДЕФЕКТ',
+                images: ['https://i.postimg.cc/HW7Pvfrr/2026-09-18-12-49-24.png'],
+                tiers: [
+                    { min: 1, price: 3200, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_chainsaw_180_box',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Бензопила 180 (мятая коробка)',
+                desc: 'Новая бензопила 180. Дефект упаковки: мятая коробка, инструмент полностью исправен.',
+                price: 4800,
+                wb_price: 4800,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ КОРОБКА',
+                images: ['https://i.postimg.cc/MGVSSvTY/2026-09-18-12-42-42.png'],
+                tiers: [
+                    { min: 1, price: 4800, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_chainsaw_180_used',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Бензопила 180 (легкое б/у)',
+                desc: 'Бензопила 180. Состояние: б/у не сильное, рабочее состояние, проверена.',
+                price: 3000,
+                wb_price: 3000,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ Б/У',
+                images: ['https://i.postimg.cc/MGVSSvTY/2026-09-18-12-42-42.png'],
+                tiers: [
+                    { min: 1, price: 3000, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_chainsaw_makita_tank',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Бензопила Makita (новая, дефект бака)',
+                desc: 'Абсолютно новая бензопила Makita. Дефект: отломана часть бензобака.',
+                price: 2500,
+                wb_price: 2500,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ ДЕФЕКТ',
+                images: ['https://i.postimg.cc/MGVSSvTY/2026-09-18-12-42-42.png'],
+                tiers: [
+                    { min: 1, price: 2500, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_chainsaw_bosch',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Бензопила Bosch',
+                desc: 'Бензопила Bosch по специальной цене со склада слива.',
+                price: 3500,
+                wb_price: 3500,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ ЦЕНА',
+                images: ['https://i.postimg.cc/DfCRRqgR/2026-09-18-12-43-39.png'],
+                tiers: [
+                    { min: 1, price: 3500, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_electrosaw_8in',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Электропила 8 дюймов (АКБ 5 банок)',
+                desc: 'Аккумуляторная цепная пила 8 дюймов. В комплекте АКБ на 5 банок.',
+                price: 1500,
+                wb_price: 1500,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ 1500₽',
+                images: ['https://i.postimg.cc/rmWypfwv/2026-09-18-13-13-41.png'],
+                tiers: [
+                    { min: 1, price: 1500, label: 'Спеццена' }
+                ]
             },
             {
                 id: 'az_sliv_router_bosch',
                 channel: 'sliv',
-                cat: 'Сетевой инструмент',
-                title: 'Фрезер электрический [Слив]',
-                desc: 'Витринный образец со склада. Полный комплект цанг и направляющих.',
+                cat: 'Слив',
+                title: 'Фрезер Bosch',
+                desc: 'Фрезер Bosch по уценке со склада слива.',
                 price: 2700,
-                wb_price: 5200,
+                wb_price: 2700,
                 moq: 1,
                 box_qty: 1,
-                stock: 2,
+                stock: 1,
                 badge: 'СЛИВ 2700₽',
-                images: ['https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80'],
-                tiers: [{ min: 1, price: 2700, label: 'Штучно: 2700 ₽' }]
+                images: ['https://i.postimg.cc/8CRnPWSS/2026-09-18-13-17-51.png'],
+                tiers: [
+                    { min: 1, price: 2700, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_laser_level_case',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Лазерный уровень (скол на кейсе)',
+                desc: 'Лазерный нивелир в рабочем состоянии. Дефект: есть скол на пластиковом кейсе.',
+                price: 1800,
+                wb_price: 1800,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СКОЛ КЕЙСА',
+                images: ['https://i.postimg.cc/sxpkk8gf/2026-09-18-13-00-50.png'],
+                tiers: [
+                    { min: 1, price: 1800, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_drill_brushless_case',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Шуруповерт бесщеточный (сломан кейс)',
+                desc: 'Бесщеточный шуруповерт. Полностью рабочий комплект. Дефект: поврежден кейс. Заказ: @ignatovich1_1.',
+                price: 1500,
+                wb_price: 1500,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛОМАН КЕЙС',
+                images: ['https://i.postimg.cc/ZnV9xfz4/2026-09-18-12-53-16.png'],
+                tiers: [
+                    { min: 1, price: 1500, label: 'Спеццена' }
+                ]
+            },
+            {
+                id: 'az_sliv_drill_corded_net',
+                channel: 'sliv',
+                cat: 'Слив',
+                title: 'Дрель сетевая',
+                desc: 'Сетевая электродрель со склада уценки по фиксированной стоимости 1 300 ₽.',
+                price: 1300,
+                wb_price: 1300,
+                moq: 1,
+                box_qty: 1,
+                stock: 1,
+                badge: 'СЛИВ 1300₽',
+                images: ['https://i.postimg.cc/2jFn5wMN/2026-09-18-12-52-13.png'],
+                tiers: [
+                    { min: 1, price: 1300, label: 'Спеццена' }
+                ]
             }
         ];
 
@@ -1069,7 +2569,6 @@
 
             try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
             renderSubcategoryPills();
-            
             renderShimmerSkeletons();
             setTimeout(() => {
                 filterProducts();
@@ -1078,15 +2577,19 @@
 
         function renderSubcategoryPills() {
             const container = document.getElementById('subcategories-pills');
+            if (!container) return;
             container.innerHTML = '';
 
-            let cats = ['all'];
-            if (currentChannel === 'main') {
-                cats.push('Наборы инструментов', 'Шуруповерты и дрели', 'Специнструмент');
-            } else {
-                cats.push('Сетевой инструмент', 'Аккумуляторный инструмент', 'Измерительный инструмент');
-            }
-            cats.push('favorites');
+            const availableCats = [
+                ...new Set(
+                    allProductsData
+                        .filter(p => p.channel === currentChannel)
+                        .map(p => p.cat)
+                        .filter(Boolean)
+                )
+            ];
+
+            let cats = ['all', ...availableCats, 'favorites'];
 
             cats.forEach(c => {
                 let label = c === 'all' ? 'Весь каталог' : (c === 'favorites' ? '❤️ Избранное' : c);
@@ -1186,7 +2689,7 @@
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
                             <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
                                 <img src="${rawImg}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                                <span class="absolute top-2.5 left-2.5 ${isSliv ? 'bg-rose-500' : 'bg-brand-cyan text-black'} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
+                                <span class="absolute top-2.5 left-2.5 ${isSliv ? 'bg-rose-500 text-white' : 'bg-brand-cyan text-black'} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
                                     ${p.badge || (isSliv ? 'СЛИВ' : 'ОПТ')}
                                 </span>
                             </div>
@@ -1360,7 +2863,6 @@
         function onSliderChange(val) {
             const qty = parseInt(val) || 1;
             document.getElementById('slider-number-input').value = qty;
-            
             playCyberSound('click');
             try { tg.HapticFeedback.selectionChanged(); } catch(e) {}
 
@@ -1693,10 +3195,9 @@
                 if (!res.ok) return;
                 const sheetData = await res.json();
         
-                if (Array.isArray(sheetData) && sheetData.length > 0) {
+                if (Array.isArray(sheetData) && sheetData.length > 5) {
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     allProductsData = [...sheetData, ...slivItems];
-                    
                     renderSubcategoryPills();
                     filterProducts();
                     console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
