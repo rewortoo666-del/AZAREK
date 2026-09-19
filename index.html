@@ -225,14 +225,18 @@
 
         <!-- Переключатель складов -->
         <section class="px-4 pt-3.5">
-            <div class="hud-glass p-1.5 rounded-2xl flex gap-1.5 border border-white/10 shadow-inner">
-                <button onclick="switchChannel('main')" id="btn-tab-main" class="flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-brand-cyan to-blue-600 text-black hud-glow-cyan">
-                    <span>📦 Основной склад</span>
-                    <span class="text-[9px] bg-black/30 text-white font-mono font-bold px-1.5 py-0.5 rounded">ОПТ</span>
+            <div class="hud-glass p-1.5 rounded-2xl flex gap-1 border border-white/10 shadow-inner">
+                <button onclick="switchChannel('main')" id="btn-tab-main" class="flex-1 py-2.5 rounded-xl font-black text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg bg-gradient-to-r from-brand-cyan to-blue-600 text-black hud-glow-cyan">
+                    <span>📦 Опт</span>
+                    <span class="text-[8px] bg-black/30 text-white font-mono font-bold px-1.5 py-0.5 rounded">ПАРТИЯ</span>
                 </button>
-                <button onclick="switchChannel('sliv')" id="btn-tab-sliv" class="flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-brand-crimson">
-                    <span>🔥 Быстрый слив</span>
-                    <span class="text-[9px] bg-rose-500/20 text-rose-400 font-mono font-bold px-1.5 py-0.5 rounded">1 ШТ</span>
+                <button onclick="switchChannel('retail')" id="btn-tab-retail" class="flex-1 py-2.5 rounded-xl font-bold text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-brand-emerald">
+                    <span>🛒 Розница</span>
+                    <span class="text-[8px] bg-emerald-500/20 text-emerald-400 font-mono font-bold px-1.5 py-0.5 rounded">1 ШТ</span>
+                </button>
+                <button onclick="switchChannel('sliv')" id="btn-tab-sliv" class="flex-1 py-2.5 rounded-xl font-bold text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-brand-crimson">
+                    <span>🔥 Слив</span>
+                    <span class="text-[8px] bg-rose-500/20 text-rose-400 font-mono font-bold px-1.5 py-0.5 rounded">УЦЕНКА</span>
                 </button>
             </div>
         </section>
@@ -242,14 +246,14 @@
             <div id="channel-info-banner" class="hud-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 tech-border-cyan">
                 <div class="relative z-10 space-y-1.5">
                     <div class="flex items-center justify-between">
-                        <span id="banner-badge" class="text-[9px] font-black uppercase tracking-widest bg-brand-cyan text-black px-2 py-0.5 rounded font-mono">ПАРТИИ ОТ 10 ШТ</span>
+                        <span id="banner-badge" class="text-[9px] font-black uppercase tracking-widest bg-brand-cyan text-black px-2 py-0.5 rounded font-mono">ОПТ + РОЗНИЦА</span>
                         <span id="banner-subbadge" class="text-[10px] text-brand-emerald font-mono font-bold flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span>
-                            ROI Калькулятор WB/Ozon
+                            1 шт = розница
                         </span>
                     </div>
                     <h2 id="banner-title" class="text-base font-black text-white leading-tight pt-0.5">Оптовый инструмент под перепродажу</h2>
-                    <p id="banner-desc" class="text-[11px] text-slate-400 leading-snug">Динамический оптовый прайс, проверка брака 100%, быстрая отгрузка под склады FBO/FBS.</p>
+                    <p id="banner-desc" class="text-[11px] text-slate-400 leading-snug">Одна позиция 1 шт — розничная цена. Два и более инструмента или 2+ шт — опт, можно брать по 1 шт.</p>
                 </div>
             </div>
         </section>
@@ -283,8 +287,8 @@
         <div id="cart-bar" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[420px] hud-glass bg-slate-950/95 rounded-2xl p-3 px-4 flex flex-col gap-2 shadow-2xl opacity-0 pointer-events-none translate-y-4 transition-all duration-300 z-40 border border-brand-cyan/40 hud-glow-cyan">
             <div class="w-full space-y-1">
                 <div class="flex justify-between items-center text-[9px] font-mono">
-                    <span class="text-slate-400" id="moq-bar-title">Минимальная партия (10 шт):</span>
-                    <span class="font-bold text-brand-cyan" id="moq-bar-status">0 / 10 шт</span>
+                    <span class="text-slate-400" id="moq-bar-title">Режим цены:</span>
+                    <span class="font-bold text-brand-cyan" id="moq-bar-status">Розница</span>
                 </div>
                 <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                     <div id="moq-progress-fill" class="h-full bg-gradient-to-r from-brand-cyan to-brand-emerald transition-all duration-300" style="width: 0%"></div>
@@ -2471,6 +2475,7 @@
                         "Категория": p.cat,
                         "Количество (шт)": item.qty,
                         "Цена за ед (₽)": item.unitPrice,
+                        "Тип цены": p.channel === 'sliv' ? 'Слив' : (item.unitPrice === getRetailPrice(p) ? 'Розница' : 'Опт'),
                         "Сумма (₽)": rowSum
                     });
                 }
@@ -2527,12 +2532,24 @@
             `;
         }
 
+        function getSourceChannel(channel = currentChannel) {
+            return channel === 'retail' ? 'main' : channel;
+        }
+
+        function resetChannelButtons() {
+            const idle = 'flex-1 py-2.5 rounded-xl font-bold text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 text-slate-400';
+            document.getElementById('btn-tab-main').className = idle + ' hover:text-brand-cyan';
+            document.getElementById('btn-tab-retail').className = idle + ' hover:text-brand-emerald';
+            document.getElementById('btn-tab-sliv').className = idle + ' hover:text-brand-crimson';
+        }
+
         function switchChannel(channel) {
             playCyberSound('click');
             currentChannel = channel;
             currentSubCat = 'all';
 
             const btnMain = document.getElementById('btn-tab-main');
+            const btnRetail = document.getElementById('btn-tab-retail');
             const btnSliv = document.getElementById('btn-tab-sliv');
             const banner = document.getElementById('channel-info-banner');
             const bBadge = document.getElementById('banner-badge');
@@ -2541,21 +2558,32 @@
             const bDesc = document.getElementById('banner-desc');
             const headerTag = document.getElementById('header-brand-tag');
 
+            resetChannelButtons();
+
             if (channel === 'main') {
-                btnMain.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-brand-cyan to-blue-600 text-black hud-glow-cyan';
-                btnSliv.className = 'flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-brand-crimson';
+                btnMain.className = 'flex-1 py-2.5 rounded-xl font-black text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg bg-gradient-to-r from-brand-cyan to-blue-600 text-black hud-glow-cyan';
                 
                 banner.className = 'hud-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 tech-border-cyan';
-                bBadge.innerText = 'ПАРТИИ ОТ 10 ШТ';
+                bBadge.innerText = 'ОПТ ОТ 1 ШТ';
                 bBadge.className = 'text-[9px] font-black uppercase tracking-widest bg-brand-cyan text-black px-2 py-0.5 rounded font-mono';
-                bSubbadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span> ROI Калькулятор WB/Ozon';
+                bSubbadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span> 1 шт = розница';
                 bTitle.innerText = 'Оптовый инструмент под перепродажу';
-                bDesc.innerText = 'Динамический оптовый прайс, проверка брака 100%, быстрая отгрузка под склады FBO/FBS.';
+                bDesc.innerText = 'Одна позиция 1 шт — розничная цена. Два и более инструмента или 2+ шт одной модели — оптовая цена, можно брать по 1 шт.';
                 headerTag.innerText = 'B2B HUB';
                 headerTag.className = 'px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider bg-brand-cyan/15 text-brand-cyan uppercase border border-brand-cyan/30';
+            } else if (channel === 'retail') {
+                btnRetail.className = 'flex-1 py-2.5 rounded-xl font-black text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg bg-gradient-to-r from-emerald-400 to-teal-500 text-black';
+                
+                banner.className = 'hud-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 border border-brand-emerald/40';
+                bBadge.innerText = 'РОЗНИЧНЫЙ КАТАЛОГ';
+                bBadge.className = 'text-[9px] font-black uppercase tracking-widest bg-brand-emerald text-black px-2 py-0.5 rounded font-mono';
+                bSubbadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span> Цена за 1 шт';
+                bTitle.innerText = 'Розничные цены на инструмент';
+                bDesc.innerText = 'Покупаете только 1 инструмент — платите розницу. Добавите второй инструмент в заказ — обе позиции пересчитаются по опту.';
+                headerTag.innerText = 'RETAIL';
+                headerTag.className = 'px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider bg-brand-emerald/15 text-brand-emerald uppercase border border-brand-emerald/30';
             } else {
-                btnSliv.className = 'flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-rose-500 to-orange-500 text-white hud-glow-crimson';
-                btnMain.className = 'flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-brand-cyan';
+                btnSliv.className = 'flex-1 py-2.5 rounded-xl font-black text-[11px] transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg bg-gradient-to-r from-rose-500 to-orange-500 text-white hud-glow-crimson';
                 
                 banner.className = 'hud-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 border border-brand-crimson/30';
                 bBadge.innerText = 'КАНАЛ @AZAREK_SLIV';
@@ -2583,7 +2611,7 @@
             const availableCats = [
                 ...new Set(
                     allProductsData
-                        .filter(p => p.channel === currentChannel)
+                        .filter(p => p.channel === getSourceChannel())
                         .map(p => p.cat)
                         .filter(Boolean)
                 )
@@ -2594,9 +2622,11 @@
             cats.forEach(c => {
                 let label = c === 'all' ? 'Весь каталог' : (c === 'favorites' ? '❤️ Избранное' : c);
                 const isActive = currentSubCat === c;
-                const activeClass = currentChannel === 'main' 
-                    ? 'bg-brand-cyan text-black font-black shadow-md border-brand-cyan' 
-                    : 'bg-rose-500 text-white font-black shadow-md border-rose-400';
+                const activeClass = currentChannel === 'sliv'
+                    ? 'bg-rose-500 text-white font-black shadow-md border-rose-400'
+                    : currentChannel === 'retail'
+                        ? 'bg-brand-emerald text-black font-black shadow-md border-brand-emerald'
+                        : 'bg-brand-cyan text-black font-black shadow-md border-brand-cyan';
                 const inactiveClass = 'hud-glass text-slate-400 font-semibold border-white/10 hover:text-white';
 
                 container.innerHTML += `
@@ -2619,7 +2649,7 @@
             const query = (document.getElementById('search')?.value || '').toLowerCase();
             const sortMode = document.getElementById('sort-select')?.value || 'default';
 
-            let filtered = allProductsData.filter(p => p.channel === currentChannel);
+            let filtered = allProductsData.filter(p => p.channel === getSourceChannel());
 
             if (currentSubCat === 'favorites') {
                 filtered = filtered.filter(p => favorites.includes(p.id));
@@ -2633,16 +2663,16 @@
 
             if (sortMode === 'margin_desc') {
                 filtered.sort((a, b) => {
-                    const priceA = a.tiers?.[0]?.price || a.price;
-                    const priceB = b.tiers?.[0]?.price || b.price;
+                    const priceA = currentChannel === 'retail' ? (a.price || a.tiers?.[0]?.price) : (a.tiers?.[0]?.price || a.price);
+                    const priceB = currentChannel === 'retail' ? (b.price || b.tiers?.[0]?.price) : (b.tiers?.[0]?.price || b.price);
                     const marginA = ((a.wb_price || Math.round(priceA * 1.8)) - priceA) / priceA;
                     const marginB = ((b.wb_price || Math.round(priceB * 1.8)) - priceB) / priceB;
                     return marginB - marginA;
                 });
             } else if (sortMode === 'price_asc') {
-                filtered.sort((a, b) => (a.tiers?.[0]?.price || a.price) - (b.tiers?.[0]?.price || b.price));
+                filtered.sort((a, b) => displayCatalogPrice(a) - displayCatalogPrice(b));
             } else if (sortMode === 'price_desc') {
-                filtered.sort((a, b) => (b.tiers?.[0]?.price || b.price) - (a.tiers?.[0]?.price || a.price));
+                filtered.sort((a, b) => displayCatalogPrice(b) - displayCatalogPrice(a));
             } else if (sortMode === 'stock_desc') {
                 filtered.sort((a, b) => (b.stock || 0) - (a.stock || 0));
             }
@@ -2660,6 +2690,7 @@
             }
 
             const isSliv = currentChannel === 'sliv';
+            const isRetailView = currentChannel === 'retail';
 
             items.forEach(p => {
                 const cartItem = cart[p.id];
@@ -2667,16 +2698,24 @@
                 const isFav = favorites.includes(p.id);
 
                 const rawImg = (p.images && p.images[0]) ? p.images[0] : '';
-                const moq = Number(p.moq) || 1;
-                const boxQty = Number(p.box_qty) || moq;
-                const basePrice = Number(p.price) || 2000;
-                const tierPrice = (p.tiers && p.tiers[0]) ? Number(p.tiers[0].price) : basePrice;
+                const moq = 1;
+                const boxQty = Number(p.box_qty) || 1;
+                const retailPrice = getRetailPrice(p);
+                const tierPrice = getWholesalePrice(p, 1);
 
                 const wbPrice = Number(p.wb_price) || Math.round(tierPrice * 1.8);
                 const marginPercent = tierPrice > 0 ? Math.round(((wbPrice - tierPrice) / tierPrice) * 100) : 0;
 
                 const isHit = p.badge && p.badge.includes('ХИТ');
                 const isLowStock = p.stock <= 3;
+                const primaryPrice = isRetailView ? retailPrice : tierPrice;
+                const secondaryPrice = isRetailView ? tierPrice : retailPrice;
+                const priceColor = isSliv ? 'text-rose-400' : (isRetailView ? 'text-brand-emerald' : 'text-brand-cyan');
+                const badgeText = p.badge || (isSliv ? 'СЛИВ' : (isRetailView ? 'РОЗНИЦА' : 'ОПТ'));
+                const badgeClass = isSliv ? 'bg-rose-500 text-white' : (isRetailView ? 'bg-brand-emerald text-black' : 'bg-brand-cyan text-black');
+                const addBtnClass = isSliv
+                    ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white'
+                    : (isRetailView ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-black' : 'bg-gradient-to-r from-brand-cyan to-blue-600 text-black');
 
                 container.innerHTML += `
                     <div class="hud-card rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 hover:translate-y-[-2px] relative group ${isHit ? 'specular-sheen tech-border-cyan' : ''}">
@@ -2689,8 +2728,8 @@
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
                             <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
                                 <img src="${rawImg}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                                <span class="absolute top-2.5 left-2.5 ${isSliv ? 'bg-rose-500 text-white' : 'bg-brand-cyan text-black'} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
-                                    ${p.badge || (isSliv ? 'СЛИВ' : 'ОПТ')}
+                                <span class="absolute top-2.5 left-2.5 ${badgeClass} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
+                                    ${badgeText}
                                 </span>
                             </div>
                             <div class="p-3 pb-1">
@@ -2705,11 +2744,11 @@
                                 
                                 <div class="mt-2.5 hud-glass rounded-xl p-2 border border-white/5">
                                     <div class="flex items-baseline gap-1.5 font-mono">
-                                        <span class="font-black ${isSliv ? 'text-rose-400' : 'text-brand-cyan'} text-sm">${tierPrice.toLocaleString('ru-RU')} ₽</span>
-                                        ${basePrice > tierPrice ? `<span class="text-[10px] text-slate-500 line-through">${basePrice.toLocaleString('ru-RU')} ₽</span>` : ''}
+                                        <span class="font-black ${priceColor} text-sm">${primaryPrice.toLocaleString('ru-RU')} ₽</span>
+                                        ${!isSliv && secondaryPrice !== primaryPrice ? `<span class="text-[10px] text-slate-500">${isRetailView ? 'опт ' + secondaryPrice.toLocaleString('ru-RU') : 'розн. ' + secondaryPrice.toLocaleString('ru-RU')} ₽</span>` : ''}
                                     </div>
                                     <div class="flex justify-between items-center mt-1 pt-1 border-t border-white/5">
-                                        <p class="text-[9px] font-mono text-slate-400">${isSliv ? '1 шт' : `от ${moq} шт`}</p>
+                                        <p class="text-[9px] font-mono text-slate-400">${isSliv ? '1 шт' : (isRetailView ? 'цена за 1 шт' : 'опт от 1 шт')}</p>
                                         <span class="text-[9px] font-mono font-black text-brand-emerald bg-brand-emerald/10 px-1.5 py-0.5 rounded border border-brand-emerald/20">
                                             +${marginPercent}% WB
                                         </span>
@@ -2720,9 +2759,9 @@
 
                         <div class="p-3 pt-2">
                             ${qty === 0 
-                                ? `<button onclick="updateCart('${p.id}', ${moq}); triggerFlyToCartAnimation(this);" class="w-full py-2.5 ${isSliv ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white' : 'bg-gradient-to-r from-brand-cyan to-blue-600 text-black'} rounded-xl text-xs font-black transition flex items-center justify-center gap-1 active:scale-95 shadow-md">
+                                ? `<button onclick="updateCart('${p.id}', 1); triggerFlyToCartAnimation(this);" class="w-full py-2.5 ${addBtnClass} rounded-xl text-xs font-black transition flex items-center justify-center gap-1 active:scale-95 shadow-md">
                                     <span>В ЗАКАЗ</span>
-                                    <span class="text-[10px] font-mono opacity-80">(${moq} шт)</span>
+                                    <span class="text-[10px] font-mono opacity-80">(1 шт)</span>
                                    </button>`
                                 : `<div class="flex items-center justify-between hud-glass border border-brand-cyan/40 rounded-xl p-1">
                                     <button onclick="updateCart('${p.id}', ${qty - boxQty})" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-brand-cyan active:scale-90">-</button>
@@ -2736,14 +2775,62 @@
             });
         }
 
-        function getBaseUnitPrice(product, qty) {
-            let unitPrice = (product.tiers && product.tiers[0]) ? product.tiers[0].price : product.price;
+        function getRetailPrice(product) {
+            return Number(product.price) || Number(product.tiers?.[0]?.price) || 0;
+        }
+
+        function getWholesalePrice(product, qty) {
+            let unitPrice = (product.tiers && product.tiers[0]) ? Number(product.tiers[0].price) : getRetailPrice(product);
             if (product.tiers && Array.isArray(product.tiers)) {
                 for (let t of product.tiers) {
-                    if (qty >= t.min) unitPrice = t.price;
+                    if (qty >= t.min) unitPrice = Number(t.price);
                 }
             }
             return unitPrice;
+        }
+
+        function getBaseUnitPrice(product, qty) {
+            return getWholesalePrice(product, qty);
+        }
+
+        function displayCatalogPrice(product) {
+            return currentChannel === 'retail' ? getRetailPrice(product) : getWholesalePrice(product, 1);
+        }
+
+        function summarizeCartState(extraId = null, extraQty = null) {
+            const counts = {};
+            for (const [id, item] of Object.entries(cart)) {
+                counts[id] = item.qty;
+            }
+            if (extraId) {
+                if (extraQty <= 0) delete counts[extraId];
+                else counts[extraId] = extraQty;
+            }
+            const ids = Object.keys(counts).filter(id => counts[id] > 0);
+            const totalQty = ids.reduce((sum, id) => sum + counts[id], 0);
+            return { ids, totalQty, unique: ids.length };
+        }
+
+        function isRetailCheckoutMode(extraId = null, extraQty = null) {
+            const { unique, totalQty } = summarizeCartState(extraId, extraQty);
+            return unique <= 1 && totalQty <= 1;
+        }
+
+        function getEffectiveUnitPrice(product, qty, extraId = null, extraQty = null) {
+            if (!product) return 0;
+            if (product.channel === 'sliv') return getWholesalePrice(product, qty);
+            if (isRetailCheckoutMode(extraId ?? product.id, extraQty ?? qty)) {
+                return getRetailPrice(product);
+            }
+            return getWholesalePrice(product, qty);
+        }
+
+        function rebuildCartPrices() {
+            for (const [id, item] of Object.entries(cart)) {
+                const p = allProductsData.find(prod => prod.id === id);
+                if (!p) continue;
+                item.unitPrice = getEffectiveUnitPrice(p, item.qty);
+            }
         }
 
         function switchModalTab(tab) {
@@ -2775,7 +2862,7 @@
             const retailPrice = parseInt(document.getElementById('roi-retail-price').value) || (p.wb_price || 4000);
             const qty = parseInt(document.getElementById('modal-slider').value) || (p.moq || 1);
             
-            const unitCost = getBaseUnitPrice(p, qty);
+            const unitCost = getEffectiveUnitPrice(p, qty, p.id, qty);
             const totalPurchaseCost = unitCost * qty;
             const totalRevenue = retailPrice * qty;
             
@@ -2804,7 +2891,7 @@
             const qty = cartItem ? cartItem.qty : (p.moq || 1);
             const isSliv = p.channel === 'sliv';
 
-            document.getElementById('modal-badge').innerText = p.badge || (isSliv ? '🔥 СЛИВ' : '📦 ОПТ');
+            document.getElementById('modal-badge').innerText = p.badge || (isSliv ? '🔥 СЛИВ' : (currentChannel === 'retail' ? '🛒 РОЗНИЦА' : '📦 ОПТ'));
             document.getElementById('modal-stock-text').innerText = `Склад: ${p.stock || 0} шт`;
             document.getElementById('modal-main-img').src = (p.images && p.images[0]) ? p.images[0] : '';
             document.getElementById('modal-title').innerText = p.title;
@@ -2814,8 +2901,17 @@
 
             const tiersBox = document.getElementById('modal-tiers-container');
             tiersBox.innerHTML = '';
-            (p.tiers || [{ min: p.moq, price: p.price, label: 'Опт' }]).forEach(t => {
-                const isPassed = qty >= t.min;
+            if (!isSliv) {
+                const retailNow = isRetailCheckoutMode(p.id, qty);
+                tiersBox.innerHTML += `
+                    <div class="hud-glass rounded-xl p-2 text-center transition-all border ${retailNow ? 'border-brand-emerald bg-brand-emerald/15' : 'border-white/5'}">
+                        <span class="text-[9px] font-mono text-slate-400 block">Розница 1 шт</span>
+                        <span class="font-mono font-black ${retailNow ? 'text-brand-emerald' : 'text-slate-300'} text-xs">${getRetailPrice(p)} ₽</span>
+                    </div>
+                `;
+            }
+            (p.tiers || [{ min: 1, price: p.price, label: 'Опт' }]).forEach(t => {
+                const isPassed = !isRetailCheckoutMode(p.id, qty) && qty >= t.min;
                 tiersBox.innerHTML += `
                     <div class="hud-glass rounded-xl p-2 text-center transition-all border ${isPassed ? 'border-brand-cyan bg-brand-cyan/15' : 'border-white/5'}">
                         <span class="text-[9px] font-mono text-slate-400 block">${t.label}</span>
@@ -2825,15 +2921,17 @@
             });
 
             const slider = document.getElementById('modal-slider');
-            const minQty = p.moq || 1;
+            const minQty = 1;
             slider.min = minQty;
             slider.max = Math.max(p.stock || 50, (p.moq || 5) * (isSliv ? 2 : 10), minQty + 4);
-            slider.step = p.box_qty || 1;
+            slider.step = 1;
             slider.value = qty;
 
             document.getElementById('slider-number-input').value = qty;
-            document.getElementById('slider-title-label').innerText = isSliv ? 'Штук к выкупу:' : 'Объем партии:';
-            document.getElementById('box-quantity-hint').innerText = isSliv ? 'Штучный выкуп' : `Квант упаковки: ${p.box_qty || p.moq || 1} шт`;
+            document.getElementById('slider-title-label').innerText = isSliv ? 'Штук к выкупу:' : (currentChannel === 'retail' ? 'Количество:' : 'Объем партии:');
+            document.getElementById('box-quantity-hint').innerText = isSliv
+                ? 'Штучный выкуп'
+                : '1 шт одной позиции = розница. 2+ шт или микс = опт';
 
             const chips = document.getElementById('quick-preset-chips');
             chips.innerHTML = '';
@@ -2878,12 +2976,15 @@
         }
 
         function updateModalCalculations(product, qty) {
-            const unitPrice = getBaseUnitPrice(product, qty);
+            const unitPrice = getEffectiveUnitPrice(product, qty, product.id, qty);
             const total = qty * unitPrice;
             const isSliv = product.channel === 'sliv';
+            const retailMode = !isSliv && isRetailCheckoutMode(product.id, qty);
 
             animateNumberRoll('tier-unit-price', unitPrice);
             animateNumberRoll('slider-total-price', total);
+            const priceHint = document.getElementById('tier-discount-tag');
+            if (priceHint) priceHint.innerText = retailMode ? 'Розничная цена' : 'Оптовая цена';
 
             let currentTierIndex = -1;
             if (product.tiers && Array.isArray(product.tiers)) {
@@ -2902,10 +3003,18 @@
             }
 
             const tiersBox = document.getElementById('modal-tiers-container');
-            if (product.tiers && tiersBox) {
+            if (tiersBox) {
                 tiersBox.innerHTML = '';
-                product.tiers.forEach((t, idx) => {
-                    const isPassed = qty >= t.min;
+                if (!isSliv) {
+                    tiersBox.innerHTML += `
+                        <div class="hud-glass rounded-xl p-2 text-center transition-all border ${retailMode ? 'border-brand-emerald bg-brand-emerald/15 tier-unlocked-burst' : 'border-white/5'}">
+                            <span class="text-[9px] font-mono text-slate-400 block">Розница 1 шт</span>
+                            <span class="font-mono font-black ${retailMode ? 'text-brand-emerald' : 'text-slate-300'} text-xs">${getRetailPrice(product)} ₽</span>
+                        </div>
+                    `;
+                }
+                (product.tiers || []).forEach((t, idx) => {
+                    const isPassed = !retailMode && qty >= t.min;
                     const shouldBurst = isPassed && idx === currentTierIndex && isNewTierUnlocked;
                     tiersBox.innerHTML += `
                         <div class="hud-glass rounded-xl p-2 text-center transition-all border ${isPassed ? 'border-brand-cyan bg-brand-cyan/15' : 'border-white/5'} ${shouldBurst ? 'tier-unlocked-burst' : ''}">
@@ -2944,12 +3053,23 @@
             const p = allProductsData.find(prod => prod.id === id);
             if (!p) return;
 
+            const wasRetail = isRetailCheckoutMode();
+
             if (newQty <= 0) {
                 delete cart[id];
             } else {
-                const unitPrice = getBaseUnitPrice(p, newQty);
-                cart[id] = { qty: newQty, unitPrice: unitPrice };
+                cart[id] = { qty: newQty, unitPrice: getEffectiveUnitPrice(p, newQty, id, newQty) };
             }
+
+            rebuildCartPrices();
+
+            const nowRetail = isRetailCheckoutMode();
+            if (wasRetail && !nowRetail) {
+                showToast("В заказе больше 1 позиции или 2+ шт — цена стала оптовой", "📦");
+            } else if (!wasRetail && nowRetail && Object.keys(cart).length > 0) {
+                showToast("Осталась 1 шт — цена стала розничной", "🛒");
+            }
+
             try { tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
             filterProducts();
             updateCartUI();
@@ -2977,22 +3097,24 @@
             const totalItems = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
             const cartBar = document.getElementById('cart-bar');
 
-            const minMoq = 10;
-            const moqPercent = Math.min(100, Math.round((totalItems / minMoq) * 100));
+            const uniqueCount = Object.keys(cart).length;
+            const retailMode = isRetailCheckoutMode();
             const fillEl = document.getElementById('moq-progress-fill');
             const statusEl = document.getElementById('moq-bar-status');
             const titleEl = document.getElementById('moq-bar-title');
 
-            if (fillEl) fillEl.style.width = `${moqPercent}%`;
+            if (fillEl) fillEl.style.width = retailMode ? '35%' : '100%';
             if (statusEl) {
-                if (totalItems >= minMoq) {
-                    statusEl.innerText = "✓ ВЫПОЛНЕНО";
+                if (retailMode) {
+                    statusEl.innerText = "РОЗНИЦА";
                     statusEl.className = "font-bold text-brand-emerald font-mono";
-                    titleEl.innerText = "Минималка опта подтверждена:";
+                    titleEl.innerText = "1 инструмент 1 шт — розничная цена:";
                 } else {
-                    statusEl.innerText = `${totalItems} / ${minMoq} шт`;
+                    statusEl.innerText = uniqueCount > 1 ? "ОПТ • МИКС" : "ОПТ";
                     statusEl.className = "font-bold text-brand-cyan font-mono";
-                    titleEl.innerText = `До оптовой отгрузки еще ${minMoq - totalItems} шт:`;
+                    titleEl.innerText = uniqueCount > 1
+                        ? "Несколько инструментов — опт, можно по 1 шт:"
+                        : "2+ шт одной модели — оптовая цена:";
                 }
             }
 
@@ -3016,12 +3138,15 @@
                 const p = allProductsData.find(prod => prod.id === id);
                 if (p) {
                     const isSliv = p.channel === 'sliv';
+                    const isRetailLine = !isSliv && item.unitPrice === getRetailPrice(p);
+                    const tag = isSliv ? 'СЛИВ' : (isRetailLine ? 'РОЗН' : 'ОПТ');
+                    const tagClass = isSliv ? 'bg-rose-500/20 text-rose-400' : (isRetailLine ? 'bg-brand-emerald/20 text-brand-emerald' : 'bg-brand-cyan/20 text-brand-cyan');
                     itemsContainer.innerHTML += `
                         <div class="flex justify-between items-center hud-glass rounded-xl p-2.5 text-xs border border-white/5">
                             <div>
                                 <p class="font-bold text-white leading-tight">
                                     ${p.title} 
-                                    <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${isSliv ? 'bg-rose-500/20 text-rose-400' : 'bg-brand-cyan/20 text-brand-cyan'}">${isSliv ? 'СЛИВ' : 'ОПТ'}</span>
+                                    <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${tagClass}">${tag}</span>
                                 </p>
                                 <p class="text-[10px] font-mono text-slate-400 mt-0.5">${item.qty} шт × ${item.unitPrice} ₽</p>
                             </div>
@@ -3069,11 +3194,15 @@
             for (const [id, item] of Object.entries(cart)) {
                 const p = allProductsData.find(prod => prod.id === id);
                 if (p) {
+                    const priceMode = p.channel === 'sliv'
+                        ? 'sliv'
+                        : (item.unitPrice === getRetailPrice(p) ? 'retail' : 'wholesale');
                     orderItems.push({
-                        title: p.title + (p.channel === 'sliv' ? ' [Слив/Уценка]' : ''),
+                        title: p.title + (p.channel === 'sliv' ? ' [Слив/Уценка]' : (priceMode === 'retail' ? ' [Розница]' : ' [Опт]')),
                         qty: item.qty,
                         price: item.unitPrice,
-                        total: item.unitPrice * item.qty
+                        total: item.unitPrice * item.qty,
+                        price_mode: priceMode
                     });
                 }
             }
@@ -3081,6 +3210,7 @@
             const payload = {
                 type: 'order',
                 pay_method: currentPayMethod,
+                price_mode: isRetailCheckoutMode() ? 'retail' : 'wholesale',
                 buyer_inn: buyerInn || 'Не указан',
                 cart: orderItems,
                 total_sum: total,
