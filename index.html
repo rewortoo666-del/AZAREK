@@ -2,7 +2,7 @@
 <html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AZAREK 2.0 | Cyber B2B Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -221,12 +221,31 @@
             pointer-events: none;
             transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        /* Телефон: нижняя панель Telegram не должна перекрывать кнопки */
+        #cart-bar {
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--tg-safe-area-inset-bottom, 0px));
+        }
+        #checkout-sheet,
+        #product-sheet,
+        #tracker-sheet {
+            padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px) + var(--tg-safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px));
+        }
+        #order-submit-btn {
+            min-height: 48px;
+            touch-action: manipulation;
+        }
+        #toast {
+            top: auto;
+            bottom: 46%;
+            transform: translate(-50%, 50%);
+        }
     </style>
 </head>
 <body class="flex justify-center min-h-screen antialiased pb-32 selection:bg-brand-cyan selection:text-black">
 
     <!-- Toast уведомление -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hud-glass text-white text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl border border-brand-cyan/40 opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-3 flex items-center gap-2.5">
+    <div id="toast" class="fixed left-1/2 z-[90] hud-glass text-white text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl border border-brand-cyan/40 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5">
         <span id="toast-icon">⚡️</span>
         <span id="toast-text" class="font-mono">Готово</span>
     </div>
@@ -635,7 +654,7 @@
                     <span class="font-black text-lg text-brand-cyan font-mono" id="checkout-total">0 ₽</span>
                 </div>
 
-                <button onclick="sendOrderToBot()" class="w-full py-3.5 bg-gradient-to-r from-brand-cyan to-blue-600 text-black font-black rounded-xl text-xs tracking-wider shadow-xl transition active:scale-[0.98] hud-glow-cyan">
+                <button type="button" id="order-submit-btn" onclick="event.stopPropagation(); sendOrderToBot();" class="w-full py-3.5 bg-gradient-to-r from-brand-cyan to-blue-600 text-black font-black rounded-xl text-xs tracking-wider shadow-xl transition active:scale-[0.98] hud-glow-cyan">
                     ОФОРМИТЬ СПЕЦИФИКАЦИЮ
                 </button>
             </div>
@@ -646,8 +665,9 @@
     <script>
         const tg = window.Telegram?.WebApp;
         try {
-            tg.expand();
             tg.ready();
+            tg.expand();
+            if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
         } catch(e) {}
 
         const MANAGER_USERNAME = "ignatovich1_1";
@@ -769,9 +789,15 @@
             let currentY = 0;
             let isDragging = false;
 
+            const isInteractive = (el) => {
+                return !!(el && el.closest && el.closest('input, textarea, select, button, label, a, [data-no-swipe]'));
+            };
+
             sheet.addEventListener('touchstart', (e) => {
                 if (sheet.scrollTop > 5) return;
+                if (isInteractive(e.target)) return;
                 startY = e.touches[0].clientY;
+                currentY = startY;
                 isDragging = true;
                 sheet.style.transition = 'none';
             }, { passive: true });
@@ -780,7 +806,6 @@
                 if (!isDragging) return;
                 currentY = e.touches[0].clientY;
                 const deltaY = currentY - startY;
-
                 if (deltaY > 0) {
                     sheet.style.transform = `translateY(${deltaY}px)`;
                 }
@@ -791,7 +816,6 @@
                 isDragging = false;
                 sheet.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
                 const deltaY = currentY - startY;
-
                 if (deltaY > 110) {
                     try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
                     closeCallback();
@@ -6705,6 +6729,11 @@
                 return;
             }
 
+            if (!Object.keys(cart).length) {
+                showToast("Корзина пустая", "⚠️");
+                return;
+            }
+
             let orderItems = [];
             let total = calculateSubtotal();
 
@@ -6715,7 +6744,8 @@
                         ? 'sliv'
                         : (item.unitPrice === getRetailPrice(p) ? 'retail' : 'wholesale');
                     orderItems.push({
-                        title: p.title + (p.channel === 'sliv' ? ' [Слив/Уценка]' : (priceMode === 'retail' ? ' [Розница]' : ' [Опт]')),
+                        id,
+                        title: (p.title || '').slice(0, 80) + (p.channel === 'sliv' ? ' [Слив]' : (priceMode === 'retail' ? ' [Розн]' : ' [Опт]')),
                         qty: item.qty,
                         price: item.unitPrice,
                         total: item.unitPrice * item.qty,
@@ -6736,10 +6766,41 @@
                 contacts: contacts
             };
 
-            if (tg && typeof tg.sendData === 'function') {
-                tg.sendData(JSON.stringify(payload));
-            } else {
-                showToast("Заявка сформирована для чата!", "✅");
+            const raw = JSON.stringify(payload);
+            const submitBtn = document.getElementById('order-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'ОТПРАВКА…';
+            }
+
+            try {
+                if (tg && typeof tg.sendData === 'function') {
+                    if (raw.length > 3900) {
+                        showToast("Слишком большой заказ для телефона. Уберите часть позиций", "⚠️");
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
+                        }
+                        return;
+                    }
+                    tg.sendData(raw);
+                    showToast("Заявка отправлена", "✅");
+                    try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+                    setTimeout(() => {
+                        try { tg.close(); } catch (e) {}
+                    }, 280);
+                    return;
+                }
+                showToast("Откройте каталог нижней кнопкой «🧰 Каталог AZAREK»", "⚠️");
+            } catch (err) {
+                showToast("Не удалось отправить. Откройте каталог с кнопки бота", "⚠️");
+            } finally {
+                setTimeout(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
+                    }
+                }, 1600);
             }
         }
 
@@ -6810,10 +6871,10 @@
             if (!toast) return;
             document.getElementById('toast-text').innerText = text;
             document.getElementById('toast-icon').innerText = icon;
-            toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-3');
+            toast.classList.remove('opacity-0', 'pointer-events-none');
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-3');
-            }, 2300);
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2600);
         }
 
         function toggleFavorite(id, event) {
