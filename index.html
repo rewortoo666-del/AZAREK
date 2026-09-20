@@ -673,6 +673,7 @@
             tg.ready();
             tg.expand();
             if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+            try { tg.MainButton.hide(); } catch (e) {}
         } catch(e) {}
 
         const MANAGER_USERNAME = "ignatovich1_1";
@@ -6753,33 +6754,12 @@
             modal.classList.remove('opacity-0', 'pointer-events-none');
             sheet.classList.remove('translate-y-full');
             sheet.style.transform = 'translateY(0)';
-            showTelegramOrderButton();
         }
 
         function hideCheckout() {
             const sheet = document.getElementById('checkout-sheet');
             sheet.style.transform = 'translateY(100%)';
             document.getElementById('checkout-form').classList.add('opacity-0', 'pointer-events-none');
-            hideTelegramOrderButton();
-        }
-
-        function showTelegramOrderButton() {
-            try {
-                if (!tg || !tg.MainButton) return;
-                tg.MainButton.setText('ОФОРМИТЬ СПЕЦИФИКАЦИЮ');
-                tg.MainButton.color = '#00F5FF';
-                tg.MainButton.textColor = '#000000';
-                tg.MainButton.onClick(sendOrderToBot);
-                tg.MainButton.show();
-                tg.MainButton.enable();
-            } catch (e) {}
-        }
-
-        function hideTelegramOrderButton() {
-            try {
-                if (!tg || !tg.MainButton) return;
-                tg.MainButton.hide();
-            } catch (e) {}
         }
 
         function sendOrderToBot() {
@@ -6906,7 +6886,6 @@
                 }).then(r => {
                     if (r.ok) {
                         showToast("Заявка отправлена менеджеру", "✅");
-                        hideTelegramOrderButton();
                         try { tg.close(); } catch (e) {}
                     }
                 }).catch(() => {});
