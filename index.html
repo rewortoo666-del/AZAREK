@@ -657,6 +657,11 @@
                 <button type="button" id="order-submit-btn" onclick="event.stopPropagation(); sendOrderToBot();" class="w-full py-3.5 bg-gradient-to-r from-brand-cyan to-blue-600 text-black font-black rounded-xl text-xs tracking-wider shadow-xl transition active:scale-[0.98] hud-glow-cyan">
                     ОФОРМИТЬ СПЕЦИФИКАЦИЮ
                 </button>
+                <div id="order-fallback" class="hidden space-y-2 pt-1">
+                    <p class="text-[11px] text-amber-400 font-bold">Telegram на телефоне не передал заявку через sendData. Отправьте текст ниже в чат бота — заявка оформится.</p>
+                    <textarea id="order-fallback-text" readonly class="w-full h-28 hud-glass rounded-xl px-3 py-2 text-[11px] text-white font-mono outline-none border border-amber-400/40"></textarea>
+                    <button type="button" onclick="copyFallbackOrder()" class="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs">СКОПИРОВАТЬ И ЗАКРЫТЬ</button>
+                </div>
             </div>
         </div>
 
@@ -6763,44 +6768,101 @@
                 total_sum: total,
                 company: `${company} (ТК: ${tk})`,
                 city: city,
+                contacts: contacts,
+                initData: (tg && tg.initData) ? tg.initData : ''
+            };
+
+            const compact = {
+                type: 'order',
+                pay_method: payload.pay_method,
+                buyer_inn: payload.buyer_inn,
+                cart: orderItems.map(it => ({
+                    id: it.id,
+                    title: it.title,
+                    qty: it.qty,
+                    price: it.price,
+                    total: it.total
+                })),
+                total_sum: total,
+                company: payload.company,
+                city: city,
                 contacts: contacts
             };
 
-            const raw = JSON.stringify(payload);
+            const raw = JSON.stringify(compact);
             const submitBtn = document.getElementById('order-submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerText = 'ОТПРАВКА…';
             }
 
-            try {
-                if (tg && typeof tg.sendData === 'function') {
-                    if (raw.length > 3900) {
-                        showToast("Слишком большой заказ для телефона. Уберите часть позиций", "⚠️");
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
-                        }
-                        return;
-                    }
-                    tg.sendData(raw);
-                    showToast("Заявка отправлена", "✅");
-                    try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
-                    setTimeout(() => {
-                        try { tg.close(); } catch (e) {}
-                    }, 280);
-                    return;
+            const plain = [
+                'AZAREK_ORDER',
+                `PAY:${currentPayMethod}`,
+                `SUM:${total}`,
+                `INN:${payload.buyer_inn}`,
+                `COMPANY:${payload.company}`,
+                `CITY:${city}`,
+                `CONTACTS:${contacts}`,
+                ...orderItems.map(it => `ITEM:${it.title}|${it.qty}|${it.total}`)
+            ].join('\n');
+
+            window.__lastPlainOrder = plain;
+            const fallbackBox = document.getElementById('order-fallback');
+            const fallbackText = document.getElementById('order-fallback-text');
+            if (fallbackText) fallbackText.value = plain;
+
+            const revealFallback = (msg) => {
+                showToast(msg, "⚠️");
+                if (fallbackBox) fallbackBox.classList.remove('hidden');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
                 }
-                showToast("Откройте каталог нижней кнопкой «🧰 Каталог AZAREK»", "⚠️");
-            } catch (err) {
-                showToast("Не удалось отправить. Откройте каталог с кнопки бота", "⚠️");
-            } finally {
-                setTimeout(() => {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
+            };
+
+            try {
+                if (tg && typeof tg.sendData === 'function' && raw.length < 3900) {
+                    tg.sendData(raw);
+                }
+            } catch (err) {}
+
+            const apiUrl = window.AZAREK_ORDER_API || '';
+            if (apiUrl) {
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(r => {
+                    if (r.ok) {
+                        showToast("Заявка отправлена менеджеру", "✅");
+                        try { tg.close(); } catch (e) {}
                     }
-                }, 1600);
+                }).catch(() => {});
+            }
+
+            setTimeout(() => {
+                if (document.visibilityState !== 'visible') return;
+                revealFallback("На телефоне sendData не дошёл. Скопируйте заявку и вставьте в чат бота");
+            }, 900);
+        }
+
+        function copyFallbackOrder() {
+            const text = window.__lastPlainOrder || (document.getElementById('order-fallback-text') || {}).value || '';
+            const done = () => {
+                showToast("Скопировано. Вставьте в чат бота", "✅");
+                setTimeout(() => { try { tg.close(); } catch (e) {} }, 400);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(() => {
+                    const area = document.getElementById('order-fallback-text');
+                    if (area) { area.focus(); area.select(); }
+                    showToast("Выделите текст и скопируйте вручную", "⚠️");
+                });
+            } else {
+                const area = document.getElementById('order-fallback-text');
+                if (area) { area.focus(); area.select(); }
+                showToast("Выделите текст и скопируйте вручную", "⚠️");
             }
         }
 
