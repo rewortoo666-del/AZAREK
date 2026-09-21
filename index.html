@@ -3011,7 +3011,7 @@
                 desc: "Gеely Тugella / Mаnjаro / Prеfacе 2.0T Бренд: SCHAEFFLER ",
                 price: 6040, wb_price: 8150, moq: 1, box_qty: 1, stock: 476,
                 badge: 'АВТО',
-                images: ['https://i.postimg.cc/xCRQVN1d/530093610-0.jpg'],
+                images: ['https://i.postimg.cc/QCsnBMNP/image126.jpg'],
                 tiers: [{ min: 1, price: 6040, label: 'Опт от 1 шт' }, { min: 5, price: 5860, label: 'Опт от 5 шт' }]
             },
             {
@@ -6073,9 +6073,9 @@
                 banner.className = 'hud-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 border border-amber-400/40';
                 bBadge.innerText = 'АВТОЗАПЧАСТИ';
                 bBadge.className = 'text-[9px] font-black uppercase tracking-widest bg-amber-400 text-black px-2 py-0.5 rounded font-mono';
-                bSubbadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> оптовые автозапчасти';
+                bSubbadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> розница +25% / расходники +40%';
                 bTitle.innerText = 'Оптовые автозапчасти под перепродажу';
-                bDesc.innerText = 'Сначала категории, товары откроются после выбора плашки. Поиск ищет по всему авто-складу.';
+                bDesc.innerText = '1 позиция 1 шт — розница. Масла, фильтры и позиции дешевле 1500 ₽: +40%. Остальное: +25%. Две позиции или 2+ шт — опт.';
                 headerTag.innerText = 'AUTO';
                 headerTag.className = 'px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider bg-amber-500/15 text-amber-400 uppercase border border-amber-400/30';
             } else {
@@ -6325,11 +6325,47 @@
             });
         }
 
+        const PARTS_RETAIL_MARKUP = 1.25;
+        const PARTS_CONSUMABLE_MARKUP = 1.40;
+        const PARTS_CHEAP_OPT_LIMIT = 1500;
+
+        function getPartsOptPrice(product) {
+            if (product.tiers && product.tiers[0]) return Number(product.tiers[0].price) || 0;
+            return Number(product.price) || 0;
+        }
+
+        function isPartsConsumable(product) {
+            const hay = `${product?.cat || ''} ${product?.title || ''}`.toLowerCase();
+            return hay.includes('масл') || hay.includes('фильтр');
+        }
+
+        function getPartsRetailMarkup(product) {
+            const opt = getPartsOptPrice(product);
+            if (opt < PARTS_CHEAP_OPT_LIMIT || isPartsConsumable(product)) return PARTS_CONSUMABLE_MARKUP;
+            return PARTS_RETAIL_MARKUP;
+        }
+
+        function roundRetailTens(value) {
+            return Math.round(Number(value) / 10) * 10;
+        }
+
         function getRetailPrice(product) {
+            if (product && product.channel === 'parts') {
+                return roundRetailTens(getPartsOptPrice(product) * getPartsRetailMarkup(product));
+            }
             return Number(product.price) || Number(product.tiers?.[0]?.price) || 0;
         }
 
         function getWholesalePrice(product, qty) {
+            if (product && product.channel === 'parts') {
+                let unitPrice = getPartsOptPrice(product);
+                if (product.tiers && Array.isArray(product.tiers)) {
+                    for (let t of product.tiers) {
+                        if (qty >= t.min) unitPrice = Number(t.price);
+                    }
+                }
+                return unitPrice;
+            }
             let unitPrice = (product.tiers && product.tiers[0]) ? Number(product.tiers[0].price) : getRetailPrice(product);
             if (product.tiers && Array.isArray(product.tiers)) {
                 for (let t of product.tiers) {
