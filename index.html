@@ -6349,11 +6349,17 @@
             return Math.round(Number(value) / 10) * 10;
         }
 
+        const PARTS_RETAIL_FLOOR = 500;
+
         function getRetailPrice(product) {
+            let retail;
             if (product && product.channel === 'parts') {
-                return roundRetailTens(getPartsOptPrice(product) * getPartsRetailMarkup(product));
+                retail = roundRetailTens(getPartsOptPrice(product) * getPartsRetailMarkup(product));
+            } else {
+                retail = Number(product?.price) || Number(product?.tiers?.[0]?.price) || 0;
             }
-            return Number(product.price) || Number(product.tiers?.[0]?.price) || 0;
+            if (retail > 0 && retail < PARTS_RETAIL_FLOOR) return PARTS_RETAIL_FLOOR;
+            return retail;
         }
 
         function getWholesalePrice(product, qty) {
