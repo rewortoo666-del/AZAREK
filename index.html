@@ -853,6 +853,27 @@
 
         // ====================== СИНХРОНИЗИРОВАННЫЙ КАТАЛОГ AZAREK ======================
         let allProductsData = [
+
+            {
+                id: 'az_bosch_circ_laser_new',
+                channel: 'main',
+                cat: 'Пилы',
+                title: 'Циркулярная пила с лазером Bosch',
+                desc: 'Новинка. Циркулярная пила Bosch с лазерным указателем. Розница 3 000 ₽. Опт: от 8 шт — 2 300 ₽, от 100 — 2 100 ₽, от 300 — 1 900 ₽, от 500 — 1 800 ₽.',
+                price: 3000,
+                wb_price: 3000,
+                moq: 1,
+                box_qty: 8,
+                stock: 500,
+                badge: 'НОВИНКА',
+                images: ['https://i.postimg.cc/jLkP4CQc/120.jpg'],
+                tiers: [
+                    { min: 8, price: 2300, label: 'Опт от 8 шт' },
+                    { min: 100, price: 2100, label: 'Опт от 100 шт' },
+                    { min: 300, price: 1900, label: 'Опт от 300 шт' },
+                    { min: 500, price: 1800, label: 'Опт от 500 шт' }
+                ]
+            },
             // --- БЕНЗОПИЛЫ ---
             {
                 id: 'az_stihl_ms180',
