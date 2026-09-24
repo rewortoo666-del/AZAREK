@@ -658,7 +658,7 @@
                     ОФОРМИТЬ СПЕЦИФИКАЦИЮ
                 </button>
                 <div id="order-fallback" class="hidden space-y-2 pt-1">
-                    <p class="text-[11px] text-amber-400 font-bold leading-snug">Чтобы заявка уходила сама, как на компьютере, закройте витрину и откройте её нижней кнопкой <b>«🧰 Каталог AZAREK»</b> в чате бота — не через меню и не через «AZAREK_OPT».</p>
+                    <p class="text-[11px] text-amber-400 font-bold leading-snug">Если счёт не пришёл в чат бота — нажмите «СКОПИРОВАТЬ ЗАЯВКУ» и отправьте текст в чат бота. Один раз напишите боту /start.</p>
                     <textarea id="order-fallback-text" readonly class="w-full h-24 hud-glass rounded-xl px-3 py-2 text-[11px] text-white font-mono outline-none border border-amber-400/40"></textarea>
                     <button type="button" onclick="copyFallbackOrder()" class="w-full py-3 bg-amber-400 text-black font-black rounded-xl text-xs">СКОПИРОВАТЬ ЗАЯВКУ</button>
                 </div>
@@ -6827,202 +6827,214 @@
 
         const BOT_TOKEN = "8231426633:AAGy0m-xT6dZP0wMSmy66zPViDFvGBThAiY";
         const WAREHOUSE_CHAT_ID = "-4930936351";
+        const BOT_USERNAME = "AZAREK_OPT";
+        const TG_API = "https://api.telegram.org/bot" + BOT_TOKEN;
+
+        function escapeHtml(value) {
+            return String(value == null ? "" : value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function getTelegramUser() {
+            const webapp = window.Telegram && window.Telegram.WebApp;
+            let user = webapp && webapp.initDataUnsafe && webapp.initDataUnsafe.user;
+            if (user && user.id) return user;
+            try {
+                const raw = (webapp && webapp.initData) || "";
+                const packed = new URLSearchParams(raw).get("user");
+                if (packed) {
+                    user = JSON.parse(packed);
+                    if (user && user.id) return user;
+                }
+            } catch (err) {
+                console.error("initData user parse failed", err);
+            }
+            return null;
+        }
+
+        async function telegramSendMessage(chatId, text, extra) {
+            extra = extra || {};
+            const body = {
+                chat_id: chatId,
+                text: text,
+                parse_mode: extra.parse_mode || "HTML",
+                disable_web_page_preview: true
+            };
+            if (extra.reply_markup && extra.reply_markup.inline_keyboard) {
+                const rows = extra.reply_markup.inline_keyboard.filter(function (row) {
+                    return Array.isArray(row) && row.length;
+                });
+                if (rows.length) body.reply_markup = { inline_keyboard: rows };
+            }
+            const res = await fetch(TG_API + "/sendMessage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            let data = {};
+            try { data = await res.json(); } catch (e) {
+                data = { ok: false, description: "invalid json", http_status: res.status };
+            }
+            if (!data.ok) {
+                console.error("Telegram sendMessage error", JSON.stringify({
+                    chatId: chatId,
+                    http_status: res.status,
+                    response: data
+                }, null, 2));
+            }
+            return data;
+        }
 
         async function sendOrderToBot() {
-            playCyberSound('unlock');
+            playCyberSound("unlock");
 
-            const company = document.getElementById('company').value.trim();
-            const city = document.getElementById('city').value.trim();
-            const contacts = document.getElementById('contacts').value.trim();
-            const tk = document.getElementById('tk-choice').value;
-            const buyerInn = document.getElementById('buyer-inn').value.trim();
+            const company = document.getElementById("company").value.trim();
+            const city = document.getElementById("city").value.trim();
+            const contacts = document.getElementById("contacts").value.trim();
+            const tk = document.getElementById("tk-choice").value;
+            const buyerInnEl = document.getElementById("buyer-inn");
+            const buyerInn = buyerInnEl ? buyerInnEl.value.trim() : "";
 
             if (!company || !city || !contacts) {
                 showToast("Заполните ФИО, город и контакт", "⚠️");
                 return;
             }
-
-            if (currentPayMethod === 'invoice' && !buyerInn) {
+            if (currentPayMethod === "invoice" && !buyerInn) {
                 showToast("Укажите ИНН для выставления счёта", "⚠️");
                 return;
             }
-
             if (!Object.keys(cart).length) {
                 showToast("Корзина пустая", "⚠️");
                 return;
             }
 
-            const submitBtn = document.getElementById('order-submit-btn');
+            const submitBtn = document.getElementById("order-submit-btn");
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerText = 'ОТПРАВКА ЗАЯВКИ…';
+                submitBtn.innerText = "ОТПРАВКА ЗАЯВКИ…";
             }
 
             const total = calculateSubtotal();
-            const totalFormatted = total.toLocaleString('ru-RU') + ' ₽';
+            const totalFormatted = total.toLocaleString("ru-RU") + " ₽";
             const orderId = Math.floor(Date.now() / 1000) % 1000000;
-            const payTitle = currentPayMethod === 'invoice' 
-                ? '📄 СЧЁТ ИП/ООО (БЕЗНАЛ)' 
-                : '⚡️ СБП / ПЕРЕВОД (АЛЬФА-БАНК)';
+            const payTitle = currentPayMethod === "invoice"
+                ? "Счёт ИП/ООО"
+                : "СБП / перевод Альфа-Банк";
 
-            const tgUser = tg?.initDataUnsafe?.user;
-            const userId = tgUser?.id || null;
-            const userFullName = tgUser ? `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() : (company || 'Покупатель');
-            const username = tgUser?.username ? `@${tgUser.username}` : 'нет';
+            const tgUser = getTelegramUser();
+            const userId = tgUser && tgUser.id ? tgUser.id : null;
+            const userFullName = tgUser
+                ? ((tgUser.first_name || "") + " " + (tgUser.last_name || "")).trim()
+                : company;
+            const username = tgUser && tgUser.username ? ("@" + tgUser.username) : "нет";
 
             const itemsLines = [];
-            for (const [id, item] of Object.entries(cart)) {
-                const p = allProductsData.find(prod => prod.id === id);
-                const title = p ? p.title : id;
-                const modeTag = p?.channel === 'sliv' ? ' [Слив]' : (item.unitPrice === getRetailPrice(p) ? ' [Розн]' : ' [Опт]');
-                const lineTotal = (item.qty * item.unitPrice).toLocaleString('ru-RU');
-                itemsLines.push(`• <b>${title}</b>${modeTag}\n   └ ${item.qty} шт. × ${item.unitPrice.toLocaleString('ru-RU')} ₽ = <b>${lineTotal} ₽</b>`);
+            for (const id of Object.keys(cart)) {
+                const item = cart[id];
+                const p = allProductsData.find(function (prod) { return prod.id === id; });
+                const title = escapeHtml(p ? p.title : id);
+                const tag = p && p.channel === "sliv" ? " [Слив]" : (p && item.unitPrice === getRetailPrice(p) ? " [Розн]" : " [Опт]");
+                itemsLines.push("• <b>" + title + "</b>" + tag + " — " + item.qty + " шт × " + item.unitPrice + " ₽ = <b>" + (item.qty * item.unitPrice).toLocaleString("ru-RU") + " ₽</b>");
             }
-            const itemsText = itemsLines.join('\n\n');
+            const itemsText = itemsLines.join("\n");
 
-            const mgrText = 
-`🛠 <b>НОВАЯ ЗАЯВКА №AZ-${orderId}</b>
-━━━━━━━━━━━━━━━━━━━━
-💳 <b>Оплата:</b> <b>${payTitle}</b>
-🏢 <b>Клиент/Байер:</b> ${company} (ТК: ${tk})
-🔢 <b>ИНН:</b> <code>${buyerInn || 'Не указан'}</code>
-👤 <b>Профиль:</b> ${userFullName} (${username}) | ID: <code>${userId || 'не определен'}</code>
-🏙 <b>Город / Служба доставки:</b> ${city}
+            const mgrText =
+                "🛠 <b>НОВАЯ ЗАЯВКА №AZ-" + orderId + "</b>\n" +
+                "💳 " + payTitle + "\n" +
+                "🏢 " + escapeHtml(company) + " (ТК: " + escapeHtml(tk) + ")\n" +
+                "🔢 ИНН: <code>" + escapeHtml(buyerInn || "Не указан") + "</code>\n" +
+                "👤 " + escapeHtml(userFullName) + " (" + escapeHtml(username) + ") ID: <code>" + escapeHtml(userId || "нет") + "</code>\n" +
+                "🏙 " + escapeHtml(city) + "\n\n" +
+                "📦 <b>Состав:</b>\n" + itemsText + "\n\n" +
+                "💰 <b>Итого: " + totalFormatted + "</b>\n" +
+                "📞 " + escapeHtml(contacts);
 
-📦 <b>СОСТАВ ПАРТИИ:</b>
-${itemsText}
+            const clientText =
+                "✅ <b>Заявка №AZ-" + orderId + " принята</b>\n\n" +
+                "💰 К оплате: <b>" + totalFormatted + "</b>\n" +
+                "🚚 " + escapeHtml(tk) + " / " + escapeHtml(city) + "\n\n" +
+                "💳 СБП: <code>+79104943524</code>\n" +
+                "Получатель: Илья И. (Альфа-Банк)\n\n" +
+                itemsText + "\n\n" +
+                "После оплаты пришлите чек в этот чат.";
 
-━━━━━━━━━━━━━━━━━━━━
-💰 <b>ИТОГО:</b> <b>${totalFormatted}</b>
-📞 <b>Контакты:</b> ${contacts}`;
-
-            const mgrKeyboard = {
-                inline_keyboard: [
-                    userId ? [{ text: "✅ Оплата поступила (В сборку)", callback_data: `mgr_take_${userId}_${orderId}` }] : [],
-                    userId ? [{ text: "🚚 Отправить трек-номер ТК", callback_data: `mgr_track_${userId}_${orderId}` }] : [],
-                    userId ? [{ text: "❌ Отклонить заказ", callback_data: `mgr_reject_${userId}_${orderId}` }] : []
-                ].filter(row => row.length > 0)
+            const clientKeyboard = {
+                inline_keyboard: [[
+                    { text: "💬 Написать Илье", url: "https://t.me/" + MANAGER_USERNAME },
+                    { text: "🧾 Открыть чат бота", url: "https://t.me/" + BOT_USERNAME }
+                ]]
             };
 
-            let clientText = "";
-            let clientKeyboard = null;
-
-            if (currentPayMethod === 'invoice') {
-                clientText = 
-`✅ <b>СПЕЦИФИКАЦИЯ №AZ-${orderId} ПРИНЯТА!</b>
-
-💰 <b>Сумма к оплате:</b> ${totalFormatted}
-📄 <b>Формат:</b> Безналичный расчет для ИП/ООО
-🏢 <b>Плательщик:</b> ${company}
-🔢 <b>ИНН:</b> <code>${buyerInn || 'Не указан'}</code>
-🚚 <b>Доставка:</b> ${tk} (${city})
-
-📦 <b>СОСТАВ ЗАКАЗА:</b>
-${itemsText}
-
-<i>Заявка передана менеджеру склада (19 км МКАД). Товар зарезервирован на 3 банковских дня.</i>`;
-
-                clientKeyboard = {
-                    inline_keyboard: [
-                        [
-                            { text: "📋 Скопировать реквизиты", callback_data: `copy_req_${orderId}` },
-                            { text: "🧾 Прикрепить платёжку", callback_data: `send_receipt_${orderId}` }
-                        ],
-                        [
-                            { text: "💬 Вопрос по счёту (Илья)", url: `https://t.me/${MANAGER_USERNAME}` },
-                            { text: "❌ Отменить заказ", callback_data: `usr_cancel_${orderId}` }
-                        ]
-                    ]
-                };
-            } else {
-                clientText = 
-`✅ <b>ЗАЯВКА №AZ-${orderId} УСПЕШНО ПРИНЯТА!</b>
-
-💰 <b>Сумма к оплате:</b> ${totalFormatted}
-⚡️ <b>Формат:</b> Перевод на карту / СБП (Без комиссии)
-🚚 <b>Доставка:</b> ${tk} (${city})
-
-💳 <b>Реквизиты для оплаты:</b>
-• Номер телефона: <code>+79104943524</code>
-• Получатель: <b>Илья И. (Альфа-Банк)</b>
-
-📦 <b>СОСТАВ ЗАКАЗА:</b>
-${itemsText}
-
-<i>После перевода отправьте квитанцию или скриншот чека прямо в этот чат — бот сразу передаст его на склад для упаковки!</i>`;
-
-                clientKeyboard = {
-                    inline_keyboard: [
-                        [
-                            { text: "⚡️ Скопировать номер СБП", callback_data: "copy_sbp" },
-                            { text: "🧾 Прикрепить чек", callback_data: `send_receipt_${orderId}` }
-                        ],
-                        [
-                            { text: "💬 Связаться с Ильёй", url: `https://t.me/${MANAGER_USERNAME}` },
-                            { text: "❌ Отменить заказ", callback_data: `usr_cancel_${orderId}` }
-                        ]
-                    ]
-                };
-            }
+            const fallbackBox = document.getElementById("order-fallback");
+            const fallbackText = document.getElementById("order-fallback-text");
+            const plain = [
+                "AZAREK_ORDER",
+                "PAY:" + currentPayMethod,
+                "SUM:" + total,
+                "INN:" + (buyerInn || "Не указан"),
+                "COMPANY:" + company + " (ТК: " + tk + ")",
+                "CITY:" + city,
+                "CONTACTS:" + contacts
+            ].join("\n");
+            window.__lastPlainOrder = plain;
+            if (fallbackText) fallbackText.value = plain;
 
             try {
-                const sendWarehouse = fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: WAREHOUSE_CHAT_ID,
-                        text: mgrText,
-                        parse_mode: 'HTML',
-                        reply_markup: mgrKeyboard
-                    })
-                });
+                try {
+                    if (tg && typeof tg.sendData === "function") {
+                        tg.sendData(JSON.stringify({
+                            type: "order",
+                            pay_method: currentPayMethod,
+                            buyer_inn: buyerInn || "Не указан",
+                            cart: Object.keys(cart).map(function (id) {
+                                const item = cart[id];
+                                return { id: id, qty: item.qty, price: item.unitPrice, total: item.qty * item.unitPrice };
+                            }),
+                            total_sum: total,
+                            company: company + " (ТК: " + tk + ")",
+                            city: city,
+                            contacts: contacts
+                        }));
+                    }
+                } catch (e) {}
 
-                const requests = [sendWarehouse];
+                const warehouseRes = await telegramSendMessage(WAREHOUSE_CHAT_ID, mgrText);
+                if (!warehouseRes.ok) throw new Error(warehouseRes.description || "warehouse");
 
                 if (userId) {
-                    const sendClient = fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: userId,
-                            text: clientText,
-                            parse_mode: 'HTML',
-                            reply_markup: clientKeyboard
-                        })
-                    });
-                    requests.push(sendClient);
-                }
-
-                const [resWarehouse] = await Promise.all(requests);
-
-                if (!resWarehouse.ok) {
-                    throw new Error('Telegram API reject');
-                }
-
-                showToast("Заявка успешно оформлена!", "✅");
-                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
-
-                cart = {};
-                updateCartUI();
-
-                setTimeout(() => {
-                    hideCheckout();
-                    if (tg && typeof tg.close === 'function') {
-                        tg.close();
+                    const clientRes = await telegramSendMessage(userId, clientText, { reply_markup: clientKeyboard });
+                    if (!clientRes.ok) {
+                        showToast("Склад заявку получил. Счёт в личку не дошёл — нажмите /start боту", "⚠️");
+                    } else {
+                        showToast("Заявка ушла на склад и в чат бота", "✅");
                     }
-                }, 1000);
+                } else {
+                    showToast("Заявка на складе. Откройте бота и нажмите /start, чтобы получить счёт", "⚠️");
+                    if (fallbackBox) fallbackBox.classList.remove("hidden");
+                    if (tg && tg.openTelegramLink) tg.openTelegramLink("https://t.me/" + BOT_USERNAME);
+                }
 
+                try { tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+                if (typeof updateCartUI === "function") {
+                    cart = {};
+                    updateCartUI();
+                }
+
+                setTimeout(function () {
+                    hideCheckout();
+                    try { tg.close(); } catch (e) {}
+                }, 900);
             } catch (err) {
-                console.error("Order error:", err);
-                showToast("Ошибка сети. Открываем чат менеджера…", "⚠️");
-                const cleanText = mgrText.replace(/<[^>]*>/g, '');
-                const fallbackUrl = `https://t.me/${MANAGER_USERNAME}?text=${encodeURIComponent(cleanText)}`;
-                if (tg && tg.openTelegramLink) tg.openTelegramLink(fallbackUrl);
-                else window.open(fallbackUrl, '_blank');
+                console.error("Order error", err);
+                showToast("Сеть сбойнула. Скопируйте заявку ниже", "⚠️");
+                if (fallbackBox) fallbackBox.classList.remove("hidden");
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
+                    submitBtn.innerText = "ОФОРМИТЬ СПЕЦИФИКАЦИЮ";
                 }
             }
         }
@@ -7045,6 +7057,7 @@ ${itemsText}
                 showToast("Выделите текст и скопируйте вручную", "⚠️");
             }
         }
+
         function openLightbox() {
             const currentImg = document.getElementById('modal-main-img').src;
             if (!currentImg) return;
@@ -7147,7 +7160,13 @@ ${itemsText}
                 if (Array.isArray(sheetData) && sheetData.length > 5) {
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     const partsItems = allProductsData.filter(p => p.channel === 'parts');
-                    allProductsData = [...sheetData, ...partsItems, ...slivItems];
+                    const sheetItems = sheetData.map(p => {
+                        const item = Object.assign({}, p);
+                        if (!item.channel) item.channel = 'main';
+                        if (!item.images && item.img) item.images = [item.img];
+                        return item;
+                    });
+                    allProductsData = [...sheetItems, ...partsItems, ...slivItems];
                     renderSubcategoryPills();
                     filterProducts();
                     console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
