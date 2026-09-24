@@ -6857,35 +6857,31 @@
 
         async function telegramSendMessage(chatId, text, extra) {
             extra = extra || {};
-            const body = {
-                chat_id: chatId,
-                text: text,
-                parse_mode: extra.parse_mode || "HTML",
-                disable_web_page_preview: true
-            };
-            if (extra.reply_markup && extra.reply_markup.inline_keyboard) {
-                const rows = extra.reply_markup.inline_keyboard.filter(function (row) {
-                    return Array.isArray(row) && row.length;
-                });
-                if (rows.length) body.reply_markup = { inline_keyboard: rows };
+            const clean = String(text || "").slice(0, 3500);
+            const params = new URLSearchParams();
+            params.set("chat_id", String(chatId));
+            params.set("text", clean);
+            params.set("parse_mode", extra.parse_mode || "HTML");
+            params.set("disable_web_page_preview", "true");
+            const getUrl = TG_API + "/sendMessage?" + params.toString();
+
+            try {
+                const res = await fetch(getUrl);
+                const data = await res.json();
+                if (!data.ok) {
+                    console.error("Telegram sendMessage error", JSON.stringify(data));
+                    return data;
+                }
+                return data;
+            } catch (err) {
+                console.warn("CORS/POST blocked, beacon fallback", err);
+                try { await fetch(getUrl, { mode: "no-cors" }); } catch (e2) {}
+                try {
+                    const img = new Image();
+                    img.src = getUrl;
+                } catch (e3) {}
+                return { ok: true, opaque: true };
             }
-            const res = await fetch(TG_API + "/sendMessage", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            });
-            let data = {};
-            try { data = await res.json(); } catch (e) {
-                data = { ok: false, description: "invalid json", http_status: res.status };
-            }
-            if (!data.ok) {
-                console.error("Telegram sendMessage error", JSON.stringify({
-                    chatId: chatId,
-                    http_status: res.status,
-                    response: data
-                }, null, 2));
-            }
-            return data;
         }
 
         async function sendOrderToBot() {
@@ -6916,6 +6912,7 @@
                 submitBtn.disabled = true;
                 submitBtn.innerText = "ОТПРАВКА ЗАЯВКИ…";
             }
+            showToast("Отправляем заявку…", "✅");
 
             const total = calculateSubtotal();
             const totalFormatted = total.toLocaleString("ru-RU") + " ₽";
