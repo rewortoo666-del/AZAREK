@@ -6825,7 +6825,10 @@
             document.getElementById('checkout-form').classList.add('opacity-0', 'pointer-events-none');
         }
 
-        function sendOrderToBot() {
+        const BOT_TOKEN = "8231426633:AAGy0m-xT6dZP0wMSmy66zPViDFvGBThAiY";
+        const WAREHOUSE_CHAT_ID = "-4930936351";
+
+        async function sendOrderToBot() {
             playCyberSound('unlock');
 
             const company = document.getElementById('company').value.trim();
@@ -6849,123 +6852,179 @@
                 return;
             }
 
-            let orderItems = [];
-            let total = calculateSubtotal();
-
-            for (const [id, item] of Object.entries(cart)) {
-                const p = allProductsData.find(prod => prod.id === id);
-                if (p) {
-                    const priceMode = p.channel === 'sliv'
-                        ? 'sliv'
-                        : (item.unitPrice === getRetailPrice(p) ? 'retail' : 'wholesale');
-                    orderItems.push({
-                        id,
-                        title: (p.title || '').slice(0, 80) + (p.channel === 'sliv' ? ' [Слив]' : (priceMode === 'retail' ? ' [Розн]' : ' [Опт]')),
-                        qty: item.qty,
-                        price: item.unitPrice,
-                        total: item.unitPrice * item.qty,
-                        price_mode: priceMode
-                    });
-                }
-            }
-
-            const payload = {
-                type: 'order',
-                pay_method: currentPayMethod,
-                price_mode: isRetailCheckoutMode() ? 'retail' : 'wholesale',
-                buyer_inn: buyerInn || 'Не указан',
-                cart: orderItems,
-                total_sum: total,
-                company: `${company} (ТК: ${tk})`,
-                city: city,
-                contacts: contacts,
-                initData: (tg && tg.initData) ? tg.initData : ''
-            };
-
-            const compact = {
-                type: 'order',
-                pay_method: payload.pay_method,
-                buyer_inn: payload.buyer_inn,
-                cart: orderItems.map(it => ({
-                    id: it.id,
-                    title: it.title,
-                    qty: it.qty,
-                    price: it.price,
-                    total: it.total
-                })),
-                total_sum: total,
-                company: payload.company,
-                city: city,
-                contacts: contacts
-            };
-
-            const raw = JSON.stringify(compact);
             const submitBtn = document.getElementById('order-submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerText = 'ОТПРАВКА…';
+                submitBtn.innerText = 'ОТПРАВКА ЗАЯВКИ…';
             }
 
-            const plain = [
-                'AZAREK_ORDER',
-                `PAY:${currentPayMethod}`,
-                `SUM:${total}`,
-                `INN:${payload.buyer_inn}`,
-                `COMPANY:${payload.company}`,
-                `CITY:${city}`,
-                `CONTACTS:${contacts}`,
-                ...orderItems.map(it => `ITEM:${it.title}|${it.qty}|${it.total}`)
-            ].join('\n');
+            const total = calculateSubtotal();
+            const totalFormatted = total.toLocaleString('ru-RU') + ' ₽';
+            const orderId = Math.floor(Date.now() / 1000) % 1000000;
+            const payTitle = currentPayMethod === 'invoice' 
+                ? '📄 СЧЁТ ИП/ООО (БЕЗНАЛ)' 
+                : '⚡️ СБП / ПЕРЕВОД (АЛЬФА-БАНК)';
 
-            window.__lastPlainOrder = plain;
-            const fallbackBox = document.getElementById('order-fallback');
-            const fallbackText = document.getElementById('order-fallback-text');
-            if (fallbackText) fallbackText.value = plain;
+            const tgUser = tg?.initDataUnsafe?.user;
+            const userId = tgUser?.id || null;
+            const userFullName = tgUser ? `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() : (company || 'Покупатель');
+            const username = tgUser?.username ? `@${tgUser.username}` : 'нет';
 
-            const revealFallback = (msg) => {
-                showToast(msg, "⚠️");
-                if (fallbackBox) fallbackBox.classList.remove('hidden');
+            const itemsLines = [];
+            for (const [id, item] of Object.entries(cart)) {
+                const p = allProductsData.find(prod => prod.id === id);
+                const title = p ? p.title : id;
+                const modeTag = p?.channel === 'sliv' ? ' [Слив]' : (item.unitPrice === getRetailPrice(p) ? ' [Розн]' : ' [Опт]');
+                const lineTotal = (item.qty * item.unitPrice).toLocaleString('ru-RU');
+                itemsLines.push(`• <b>${title}</b>${modeTag}\n   └ ${item.qty} шт. × ${item.unitPrice.toLocaleString('ru-RU')} ₽ = <b>${lineTotal} ₽</b>`);
+            }
+            const itemsText = itemsLines.join('\n\n');
+
+            const mgrText = 
+`🛠 <b>НОВАЯ ЗАЯВКА №AZ-${orderId}</b>
+━━━━━━━━━━━━━━━━━━━━
+💳 <b>Оплата:</b> <b>${payTitle}</b>
+🏢 <b>Клиент/Байер:</b> ${company} (ТК: ${tk})
+🔢 <b>ИНН:</b> <code>${buyerInn || 'Не указан'}</code>
+👤 <b>Профиль:</b> ${userFullName} (${username}) | ID: <code>${userId || 'не определен'}</code>
+🏙 <b>Город / Служба доставки:</b> ${city}
+
+📦 <b>СОСТАВ ПАРТИИ:</b>
+${itemsText}
+
+━━━━━━━━━━━━━━━━━━━━
+💰 <b>ИТОГО:</b> <b>${totalFormatted}</b>
+📞 <b>Контакты:</b> ${contacts}`;
+
+            const mgrKeyboard = {
+                inline_keyboard: [
+                    userId ? [{ text: "✅ Оплата поступила (В сборку)", callback_data: `mgr_take_${userId}_${orderId}` }] : [],
+                    userId ? [{ text: "🚚 Отправить трек-номер ТК", callback_data: `mgr_track_${userId}_${orderId}` }] : [],
+                    userId ? [{ text: "❌ Отклонить заказ", callback_data: `mgr_reject_${userId}_${orderId}` }] : []
+                ].filter(row => row.length > 0)
+            };
+
+            let clientText = "";
+            let clientKeyboard = null;
+
+            if (currentPayMethod === 'invoice') {
+                clientText = 
+`✅ <b>СПЕЦИФИКАЦИЯ №AZ-${orderId} ПРИНЯТА!</b>
+
+💰 <b>Сумма к оплате:</b> ${totalFormatted}
+📄 <b>Формат:</b> Безналичный расчет для ИП/ООО
+🏢 <b>Плательщик:</b> ${company}
+🔢 <b>ИНН:</b> <code>${buyerInn || 'Не указан'}</code>
+🚚 <b>Доставка:</b> ${tk} (${city})
+
+📦 <b>СОСТАВ ЗАКАЗА:</b>
+${itemsText}
+
+<i>Заявка передана менеджеру склада (19 км МКАД). Товар зарезервирован на 3 банковских дня.</i>`;
+
+                clientKeyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: "📋 Скопировать реквизиты", callback_data: `copy_req_${orderId}` },
+                            { text: "🧾 Прикрепить платёжку", callback_data: `send_receipt_${orderId}` }
+                        ],
+                        [
+                            { text: "💬 Вопрос по счёту (Илья)", url: `https://t.me/${MANAGER_USERNAME}` },
+                            { text: "❌ Отменить заказ", callback_data: `usr_cancel_${orderId}` }
+                        ]
+                    ]
+                };
+            } else {
+                clientText = 
+`✅ <b>ЗАЯВКА №AZ-${orderId} УСПЕШНО ПРИНЯТА!</b>
+
+💰 <b>Сумма к оплате:</b> ${totalFormatted}
+⚡️ <b>Формат:</b> Перевод на карту / СБП (Без комиссии)
+🚚 <b>Доставка:</b> ${tk} (${city})
+
+💳 <b>Реквизиты для оплаты:</b>
+• Номер телефона: <code>+79104943524</code>
+• Получатель: <b>Илья И. (Альфа-Банк)</b>
+
+📦 <b>СОСТАВ ЗАКАЗА:</b>
+${itemsText}
+
+<i>После перевода отправьте квитанцию или скриншот чека прямо в этот чат — бот сразу передаст его на склад для упаковки!</i>`;
+
+                clientKeyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: "⚡️ Скопировать номер СБП", callback_data: "copy_sbp" },
+                            { text: "🧾 Прикрепить чек", callback_data: `send_receipt_${orderId}` }
+                        ],
+                        [
+                            { text: "💬 Связаться с Ильёй", url: `https://t.me/${MANAGER_USERNAME}` },
+                            { text: "❌ Отменить заказ", callback_data: `usr_cancel_${orderId}` }
+                        ]
+                    ]
+                };
+            }
+
+            try {
+                const sendWarehouse = fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: WAREHOUSE_CHAT_ID,
+                        text: mgrText,
+                        parse_mode: 'HTML',
+                        reply_markup: mgrKeyboard
+                    })
+                });
+
+                const requests = [sendWarehouse];
+
+                if (userId) {
+                    const sendClient = fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: userId,
+                            text: clientText,
+                            parse_mode: 'HTML',
+                            reply_markup: clientKeyboard
+                        })
+                    });
+                    requests.push(sendClient);
+                }
+
+                const [resWarehouse] = await Promise.all(requests);
+
+                if (!resWarehouse.ok) {
+                    throw new Error('Telegram API reject');
+                }
+
+                showToast("Заявка успешно оформлена!", "✅");
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+
+                cart = {};
+                updateCartUI();
+
+                setTimeout(() => {
+                    hideCheckout();
+                    if (tg && typeof tg.close === 'function') {
+                        tg.close();
+                    }
+                }, 1000);
+
+            } catch (err) {
+                console.error("Order error:", err);
+                showToast("Ошибка сети. Открываем чат менеджера…", "⚠️");
+                const cleanText = mgrText.replace(/<[^>]*>/g, '');
+                const fallbackUrl = `https://t.me/${MANAGER_USERNAME}?text=${encodeURIComponent(cleanText)}`;
+                if (tg && tg.openTelegramLink) tg.openTelegramLink(fallbackUrl);
+                else window.open(fallbackUrl, '_blank');
+            } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
                 }
-            };
-
-            const openedFromKeyboard = !!(tg && tg.initData && /(?:^|&)query_id=/.test(tg.initData));
-
-            try {
-                if (tg && typeof tg.sendData === 'function' && raw.length < 3900) {
-                    tg.sendData(raw);
-                    showToast("Отправляем заявку…", "✅");
-                }
-            } catch (err) {}
-
-            const apiUrl = window.AZAREK_ORDER_API || '';
-            if (apiUrl) {
-                fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(r => {
-                    if (r.ok) {
-                        showToast("Заявка отправлена менеджеру", "✅");
-                        try { tg.close(); } catch (e) {}
-                    }
-                }).catch(() => {});
             }
-
-            setTimeout(() => {
-                if (document.visibilityState !== 'visible') return;
-                if (openedFromKeyboard) {
-                    showToast("Если счёт не пришёл, закройте витрину и откройте каталог нижней кнопкой бота", "⚠️");
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = 'ОФОРМИТЬ СПЕЦИФИКАЦИЮ';
-                    }
-                    return;
-                }
-                revealFallback("Это окно открыто не с кнопки каталога. Заявка сама не уйдёт.");
-            }, 1200);
         }
 
         function copyFallbackOrder() {
@@ -6986,7 +7045,6 @@
                 showToast("Выделите текст и скопируйте вручную", "⚠️");
             }
         }
-
         function openLightbox() {
             const currentImg = document.getElementById('modal-main-img').src;
             if (!currentImg) return;
