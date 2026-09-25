@@ -6438,11 +6438,18 @@
             return getWholesalePrice(product, qty);
         }
 
+        function productTitle(p, id) {
+            if (!p) return String(id || '');
+            const t = (p.title || p.name || p.model || '').toString().trim();
+            if (t && !/^az_row_/i.test(t)) return t;
+            return String(id || t || '');
+        }
         function rebuildCartPrices() {
             for (const [id, item] of Object.entries(cart)) {
                 const p = allProductsData.find(prod => prod.id === id);
                 if (!p) continue;
                 item.unitPrice = getEffectiveUnitPrice(p, item.qty);
+                if (!item.title || /^az_row_/i.test(item.title)) item.title = productTitle(p, id);
             }
         }
 
@@ -6714,7 +6721,7 @@
             if (newQty <= 0) {
                 delete cart[id];
             } else {
-                cart[id] = { qty: newQty, unitPrice: getEffectiveUnitPrice(p, newQty, id, newQty) };
+                cart[id] = { qty: newQty, unitPrice: getEffectiveUnitPrice(p, newQty, id, newQty), title: (p.title || p.name || id) };
             }
 
             rebuildCartPrices();
@@ -6932,7 +6939,8 @@
             for (const id of Object.keys(cart)) {
                 const item = cart[id];
                 const p = allProductsData.find(function (prod) { return prod.id === id; });
-                const title = escapeHtml(p ? p.title : id);
+                const rawTitle = (item && item.title) || productTitle(p, id);
+                const title = escapeHtml(rawTitle);
                 const tag = p && p.channel === "sliv" ? " [Слив]" : (p && item.unitPrice === getRetailPrice(p) ? " [Розн]" : " [Опт]");
                 itemsLines.push("• <b>" + title + "</b>" + tag + " — " + item.qty + " шт × " + item.unitPrice + " ₽ = <b>" + (item.qty * item.unitPrice).toLocaleString("ru-RU") + " ₽</b>");
             }
@@ -6988,7 +6996,14 @@
                             buyer_inn: buyerInn || "Не указан",
                             cart: Object.keys(cart).map(function (id) {
                                 const item = cart[id];
-                                return { id: id, qty: item.qty, price: item.unitPrice, total: item.qty * item.unitPrice };
+                                const p = allProductsData.find(function (prod) { return prod.id === id; });
+                                return {
+                                    id: id,
+                                    title: (item && item.title) || productTitle(p, id),
+                                    qty: item.qty,
+                                    price: item.unitPrice,
+                                    total: item.qty * item.unitPrice
+                                };
                             }),
                             total_sum: total,
                             company: company + " (ТК: " + tk + ")",
@@ -7157,10 +7172,12 @@
                 if (Array.isArray(sheetData) && sheetData.length > 5) {
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     const partsItems = allProductsData.filter(p => p.channel === 'parts');
-                    const sheetItems = sheetData.map(p => {
+                    const sheetItems = sheetData.map(function (p, idx) {
                         const item = Object.assign({}, p);
                         if (!item.channel) item.channel = 'main';
                         if (!item.images && item.img) item.images = [item.img];
+                        if (!item.title) item.title = item.name || item.model || item.product || '';
+                        if (!item.id) item.id = 'az_row_' + (p.row || idx);
                         return item;
                     });
                     allProductsData = [...sheetItems, ...partsItems, ...slivItems];
