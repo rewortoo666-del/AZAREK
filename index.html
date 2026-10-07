@@ -240,9 +240,26 @@
             bottom: 46%;
             transform: translate(-50%, 50%);
         }
+
+        /* Mild sharpen for product photos – clearer on mobile, no resolution change */
+        #products-container img,
+        #modal-main-img,
+        #lightbox-img {
+            filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
+            -webkit-filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
+        }
     </style>
 </head>
 <body class="flex justify-center min-h-screen antialiased pb-32 selection:bg-brand-cyan selection:text-black">
+
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <filter id="az-sharpen" color-interpolation-filters="sRGB">
+          <feConvolveMatrix order="3" kernelMatrix="0 -0.6 0 -0.6 3.4 -0.6 0 -0.6 0" preserveAlpha="true"/>
+        </filter>
+      </defs>
+    </svg>
+
 
     <!-- Toast уведомление -->
     <div id="toast" class="fixed left-1/2 z-[90] hud-glass text-white text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl border border-brand-cyan/40 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5">
