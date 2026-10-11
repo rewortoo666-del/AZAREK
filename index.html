@@ -6723,13 +6723,23 @@
         const PARTS_RETAIL_FLOOR = 500;
 
         function getRetailPrice(product) {
+            if (!product) return 0;
             let retail;
-            if (product && product.channel === 'parts') {
+            if (product.channel === 'parts') {
                 retail = roundRetailTens(getPartsOptPrice(product) * getPartsRetailMarkup(product));
             } else {
-                retail = Number(product?.price) || Number(product?.tiers?.[0]?.price) || 0;
+                const optPrice = (product.tiers && product.tiers[0]) ? Number(product.tiers[0].price) : Number(product.price || 0);
+                // Если розница уже задана и она выше опта — берем её
+                if (product.retail && Number(product.retail) > optPrice) {
+                    retail = Number(product.retail);
+                } else if (Number(product.price) > optPrice) {
+                    retail = Number(product.price);
+                } else {
+                    // ЖЕЛЕЗНАЯ ЗАЩИТА: если из таблицы пришла только одна оптовая цена — автоматически накидываем +30% к рознице
+                    retail = Math.round((optPrice * 1.30) / 50) * 50;
+                }
             }
-            if (product?.channel !== 'gen' && retail > 0 && retail < PARTS_RETAIL_FLOOR) return PARTS_RETAIL_FLOOR;
+            if (product.channel !== 'gen' && retail > 0 && retail < PARTS_RETAIL_FLOOR) return PARTS_RETAIL_FLOOR;
             return retail;
         }
 
@@ -6744,6 +6754,15 @@
                 }
                 return unitPrice;
             }
+            // Оптовая цена берётся из первого тира или из базовой цены таблицы
+            let unitPrice = (product.tiers && product.tiers[0]) ? Number(product.tiers[0].price) : Number(product.price || 0);
+            if (product.tiers && Array.isArray(product.tiers)) {
+                for (let t of product.tiers) {
+                    if (qty >= t.min) unitPrice = Number(t.price);
+                }
+            }
+            return unitPrice;
+        }
             let unitPrice = (product.tiers && product.tiers[0]) ? Number(product.tiers[0].price) : getRetailPrice(product);
             if (product.tiers && Array.isArray(product.tiers)) {
                 for (let t of product.tiers) {
@@ -7536,7 +7555,23 @@
         attachSwipeToDismiss('checkout-sheet', hideCheckout);
 
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
+        const CACHE_KEY = "azarek_fast_catalog_cache_v5";
 
+        // 1. МГНОВЕННЫЙ СТАРТ ЗА 0.01 СЕК (берем сохраненные данные из памяти телефона)
+        try {
+            const cachedCatalog = localStorage.getItem(CACHE_KEY);
+            if (cachedCatalog) {
+                const parsed = JSON.parse(cachedCatalog);
+                if (Array.isArray(parsed) && parsed.length > 5) {
+                    allProductsData = parsed;
+                }
+            }
+        } catch(e) {}
+
+        // Мгновенно отображаем витрину, не заставляя клиента ждать 20 секунд
+        switchChannel('main');
+
+        // 2. ФОНОВОЕ ОБНОВЛЕНИЕ: обновляет цены и остатки, НЕ УДАЛЯЯ розницу и градации
         async function syncWithGoogleSheet() {
             try {
                 const res = await fetch(GOOGLE_SHEET_API);
@@ -7547,21 +7582,67 @@
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     const partsItems = allProductsData.filter(p => p.channel === 'parts');
                     const genItems = allProductsData.filter(p => p.channel === 'gen');
+
                     const sheetItems = sheetData.map(function (p, idx) {
                         const item = Object.assign({}, p);
                         if (!item.channel) item.channel = 'main';
                         if (!item.images && item.img) item.images = [item.img];
                         if (!item.title) item.title = item.name || item.model || item.product || '';
                         if (!item.id) item.id = 'az_row_' + (p.row || idx);
+
+                        // Находим существующий товар в коде, чтобы не потерять студийные фото, розницу и бейджи
+                        const existing = allProductsData.find(local => 
+                            local.id === item.id || 
+                            (local.title && item.title && local.title.toLowerCase().trim() === item.title.toLowerCase().trim())
+                        );
+
+                        // Оптовая цена из таблицы
+                        const optPrice = Number(p.price || existing?.tiers?.[0]?.price || existing?.price || 1000);
+                        
+                        // Сохраняем розницу из исходного товара или рассчитываем (+30%)
+                        const retailPrice = Number(existing?.price && existing.price > optPrice 
+                            ? existing.price 
+                            : (p.retail || Math.round((optPrice * 1.30) / 50) * 50));
+
+                        item.price = retailPrice; // сохраняем розничную цену
+                        item.retail = retailPrice;
+
+                        // Сохраняем градации опта
+                        item.tiers = existing?.tiers && existing.tiers.length > 0 
+                            ? existing.tiers.map(t => ({ ...t, price: t.min === 1 ? optPrice : t.price }))
+                            : [
+                                { min: 1, price: optPrice, label: 'Опт от 1 шт' },
+                                { min: 5, price: Math.round((optPrice * 0.96) / 50) * 50, label: 'Опт от 5 шт' }
+                            ];
+
+                        item.wb_price = Number(existing?.wb_price || p.wb_price || Math.round(optPrice * 1.15));
+
+                        // Если бейдж отсутствует или совпадает с категорией, восстанавливаем исходный
+                        if (existing?.badge) {
+                            item.badge = existing.badge;
+                        }
+
+                        // Если в таблице нет фото, оставляем исходное четкое фото
+                        if (existing?.images && (!item.images || !item.images.length)) {
+                            item.images = existing.images;
+                        }
+
                         return item;
                     });
+
                     allProductsData = [...sheetItems, ...partsItems, ...slivItems, ...genItems];
+
+                    // Сохраняем в кэш устройства для мгновенного входа в следующий раз
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(allProductsData));
+                    } catch(e) {}
+
                     renderSubcategoryPills();
                     filterProducts();
-                    console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
+                    console.log("Каталог AZAREK успешно обновлен в фоне без потери розницы!");
                 }
             } catch(e) {
-                console.warn("Загрузка из таблицы не удалась, используется локальный кэш:", e);
+                console.warn("Синхронизация с таблицей не удалась, используется локальный каталог:", e);
             }
         }
 
