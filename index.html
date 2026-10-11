@@ -245,9 +245,9 @@
         #products-container img,
         #modal-main-img,
         #lightbox-img {
-         filter: contrast(1.02);
-        image-rendering: -webkit-optimize-contrast;
-       }
+            filter: contrast(1.02);
+            image-rendering: -webkit-optimize-contrast;
+        }
     </style>
 </head>
 <body class="flex justify-center min-h-screen antialiased pb-32 selection:bg-brand-cyan selection:text-black">
@@ -427,8 +427,8 @@
                     <button onclick="closeProductModal()" class="w-8 h-8 rounded-full hud-glass text-slate-400 hover:text-white font-bold flex items-center justify-center border border-white/10 active:scale-90">✕</button>
                 </div>
 
-                <div class="relative w-full h-56 rounded-2xl overflow-hidden hud-glass cursor-zoom-in border border-white/10" onclick="openLightbox()">
-                    <img id="modal-main-img" src="" class="w-full h-full object-cover">
+                <div class="relative w-full h-56 rounded-2xl overflow-hidden bg-white cursor-zoom-in border border-white/10 p-3 flex items-center justify-center" onclick="openLightbox()">
+                    <img id="modal-main-img" src="" class="w-full h-full object-contain mix-blend-multiply">
                     <span class="absolute bottom-2.5 right-2.5 hud-glass text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-lg border border-white/20">🔍 На весь экран</span>
                 </div>
 
@@ -6515,8 +6515,8 @@
                 const safeCat = String(cat).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 return `
                     <button type="button" onclick="setSubCategory('${safeCat}')" class="hud-card rounded-2xl overflow-hidden text-left border border-amber-400/25 active:scale-[0.98] transition">
-                        <div class="relative w-full aspect-[4/3] bg-white overflow-hidden p-2.5 flex items-center justify-center">
-                         <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300" onerror="this.style.opacity='0.25'">
+                        <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
+                            ${img ? `<img src="${img}" alt="${cat}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.opacity='0.2'">` : ''}
                             <span class="absolute top-2.5 left-2.5 bg-amber-400 text-black font-black text-[9px] px-2 py-0.5 rounded-md font-mono">АВТО</span>
                         </div>
                         <div class="p-3">
@@ -6579,8 +6579,8 @@
                         </div>
 
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
-                            <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
-                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.opacity='0.25'">
+                            <div class="relative w-full aspect-[4/3] bg-white overflow-hidden p-2.5 flex items-center justify-center">
+                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300" onerror="this.style.opacity='0.25'">
                                 <span class="absolute top-2.5 left-2.5 ${badgeClass} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
                                     ${badgeText}
                                 </span>
