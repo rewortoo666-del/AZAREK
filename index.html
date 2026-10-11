@@ -6552,12 +6552,10 @@
                 const boxQty = Number(p.box_qty) || 1;
                 const tierPrice = getWholesalePrice(p, 1);
                 let baseRetail = getRetailPrice(p);
-
-                // ЖЕЛЕЗНАЯ ЗАЩИТА: если из таблицы пришла только одна цена и розница равна опту —
-                // автоматически восстанавливаем розничную цену (+35% с красивым округлением)
+                // Защита: если розница = опт или отсутствует — +20% (как в sync)
                 const retailPrice = (baseRetail && baseRetail > tierPrice)
                     ? baseRetail
-                    : Math.round((tierPrice * 1.35) / 50) * 50;
+                    : Math.round((tierPrice * 1.20) / 50) * 50;
 
                 const wbPrice = Number(p.wb_price) || Math.round(tierPrice * 1.8);
                 const marginPercent = tierPrice > 0 ? Math.round(((wbPrice - tierPrice) / tierPrice) * 100) : 0;
@@ -7474,21 +7472,23 @@
         attachSwipeToDismiss('checkout-sheet', hideCheckout);
 
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
+        const CACHE_KEY = "azarek_catalog_cache_fast_v1";
 
-        const CACHE_KEY = "azarek_catalog_cache_v4";
-
-        // 1. МГНОВЕННЫЙ СТАРТ (0 секунд): подтягиваем кэш с четкими фотками сразу при открытии
+        // 1. МГНОВЕННЫЙ СТАРТ ЗА 0.01 СЕК (берем готовый кэш из памяти телефона)
         try {
-            const cachedCatalog = localStorage.getItem(CACHE_KEY);
-            if (cachedCatalog) {
-                const parsed = JSON.parse(cachedCatalog);
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                const parsed = JSON.parse(cached);
                 if (Array.isArray(parsed) && parsed.length > 5) {
                     allProductsData = parsed;
                 }
             }
         } catch(e) {}
 
-        // 2. Фоновое обновление из таблицы: обновляет фотки и остатки, НЕ ломая розницу
+        // Сразу открываем витрину, не заставляя ждать 20 секунд
+        switchChannel('main');
+
+        // 2. ФОНОВОЕ ОБНОВЛЕНИЕ ИЗ ТАБЛИЦЫ (без затирания розницы и поломки бейджей)
         async function syncWithGoogleSheet() {
             try {
                 const res = await fetch(GOOGLE_SHEET_API);
@@ -7507,50 +7507,46 @@
                         if (!item.title) item.title = item.name || item.model || item.product || '';
                         if (!item.id) item.id = 'az_row_' + (p.row || idx);
 
-                        // Находим существующий товар из локального каталога
-                        const existing = allProductsData.find(local => 
-                            local.id === item.id || 
-                            (local.title && item.title && local.title.toLowerCase().trim() === item.title.toLowerCase().trim())
-                        );
-
-                        const optPrice = Number(p.price || existing?.tiers?.[0]?.price || existing?.price || 1000);
+                        // Оптовая цена из таблицы
+                        const optPrice = Number(p.price) || 1000;
                         
-                        // Сохраняем розницу из исходного товара или считаем нормальную розницу
-                        let retPrice = Number(existing?.price && existing.price > optPrice 
-                            ? existing.price 
-                            : (p.retail || Math.round((optPrice * 1.35) / 50) * 50));
+                        // РОЗНИЦА: если в таблице нет розницы, автоматически накидываем +20% (как в старом каталоге)
+                        const retailPrice = Number(p.retail || p.retail_price) || (Math.round((optPrice * 1.20) / 50) * 50);
+                        
+                        item.price = retailPrice; // для функции getRetailPrice
+                        item.tiers = [
+                            { min: 1, price: optPrice, label: 'Опт от 1 шт' },
+                            { min: 5, price: Math.round((optPrice * 0.97) / 50) * 50, label: 'Опт от 5 шт' }
+                        ];
 
-                        item.price = retPrice;
-                        item.tiers = existing?.tiers && existing.tiers.length > 0 
-                            ? existing.tiers.map(t => ({ ...t, price: t.min === 1 ? optPrice : t.price }))
-                            : [{ min: 1, price: optPrice, label: 'Опт от 1 шт' }];
+                        // Реальная маржа WB (+10-14%), а не дикие 75%
+                        item.wb_price = Number(p.wb_price) || Math.round(optPrice * 1.13);
 
-                        item.wb_price = Number(existing?.wb_price || p.wb_price || Math.round(optPrice * 1.08));
-
-                        if (existing && existing.badge) item.badge = existing.badge;
+                        // Если бейдж совпадает с категорией (например «БЕНЗОПИЛЫ»), делаем нормальный бейдж
+                        if (!item.badge || item.badge.toLowerCase().trim() === (item.cat || '').toLowerCase().trim()) {
+                            item.badge = 'ХИТ';
+                        }
 
                         return item;
                     });
 
                     allProductsData = [...sheetItems, ...partsItems, ...slivItems, ...genItems];
 
-                    // Сохраняем в память телефона, чтобы следующий вход был мгновенным
+                    // Сохраняем в кэш устройства, чтобы при следующем входе не было задержки вообще
                     try {
                         localStorage.setItem(CACHE_KEY, JSON.stringify(allProductsData));
                     } catch(e) {}
 
                     renderSubcategoryPills();
                     filterProducts();
-                    console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
+                    console.log("Каталог синхронизирован с Google Таблицей без потери цен!");
                 }
             } catch(e) {
-                console.warn("Загрузка из таблицы не удалась, используется локальный кэш:", e);
+                console.warn("Синхронизация с таблицей не удалась:", e);
             }
         }
 
-        // Показываем каталог СРАЗУ в первую же миллисекунду
-        switchChannel('main');
-        // Обновляем остатки на фоне без зависания интерфейса
+        // Запускаем синхронизацию на фоне
         syncWithGoogleSheet();
 
     </script>
