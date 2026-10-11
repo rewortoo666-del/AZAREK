@@ -427,8 +427,8 @@
                     <button onclick="closeProductModal()" class="w-8 h-8 rounded-full hud-glass text-slate-400 hover:text-white font-bold flex items-center justify-center border border-white/10 active:scale-90">✕</button>
                 </div>
 
-                <div class="relative w-full h-56 rounded-2xl overflow-hidden hud-glass cursor-zoom-in border border-white/10" onclick="openLightbox()">
-                    <img id="modal-main-img" src="" class="w-full h-full object-cover">
+                <div class="relative w-full h-56 rounded-2xl overflow-hidden bg-white p-3 flex items-center justify-center cursor-zoom-in border border-white/10" onclick="openLightbox()">
+                    <img id="modal-main-img" src="" class="w-full h-full object-contain mix-blend-multiply">
                     <span class="absolute bottom-2.5 right-2.5 hud-glass text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-lg border border-white/20">🔍 На весь экран</span>
                 </div>
 
@@ -6550,11 +6550,17 @@
                 const rawImg = (p.images && p.images[0]) ? p.images[0] : '';
                 const moq = 1;
                 const boxQty = Number(p.box_qty) || 1;
-                const retailPrice = getRetailPrice(p);
                 const tierPrice = getWholesalePrice(p, 1);
+                const baseRetailPrice = getRetailPrice(p);
 
-                const wbPrice = Number(p.wb_price) || Math.round(tierPrice * 1.8);
-                const marginPercent = tierPrice > 0 ? Math.round(((wbPrice - tierPrice) / tierPrice) * 100) : 0;
+                // Если розница не задана или равна опту — считаем нормальную розницу (+25-30%), как в старом каталоге
+                const retailPrice = (baseRetailPrice && baseRetailPrice > tierPrice) 
+                    ? baseRetailPrice 
+                    : Math.round((tierPrice * 1.25) / 50) * 50;
+
+                // Реалистичная маржа WB (+8-12%)
+                const wbPrice = Number(p.wb_price) || Math.round(tierPrice * 1.08);
+                const marginPercent = tierPrice > 0 ? Math.max(6, Math.round(((wbPrice - tierPrice) / tierPrice) * 100)) : 8;
 
                 const isHit = p.badge && p.badge.includes('ХИТ');
                 const isLowStock = p.stock <= 3;
@@ -6562,13 +6568,18 @@
                 const secondaryPrice = isRetailView ? tierPrice : retailPrice;
                 const ask = !!p.priceOnRequest;
                 const priceColor = isSliv ? 'text-rose-400' : (isGen ? 'text-yellow-300' : (isRetailView ? 'text-brand-emerald' : (isParts ? 'text-amber-400' : 'text-brand-cyan')));
-                const badgeText = p.badge || (isSliv ? 'СЛИВ' : (isGen ? 'ГЕН' : (isRetailView ? 'РОЗНИЦА' : 'ОПТ')));
+
+                // Аккуратный короткий бейдж, чтобы не растягивался на пол-экрана
+                let badgeText = p.badge || (isSliv ? 'СЛИВ' : (isGen ? 'ГЕН' : (isRetailView ? 'РОЗНИЦА' : 'ОПТ')));
+                if (badgeText.length > 14 || badgeText === p.cat) {
+                    badgeText = isSliv ? 'СЛИВ' : (isGen ? 'ГЕН' : 'ХИТ');
+                }
+
                 const badgeClass = isSliv ? 'bg-rose-500 text-white' : (isGen ? 'bg-yellow-400 text-black' : (isRetailView ? 'bg-brand-emerald text-black' : (isParts ? 'bg-amber-400 text-black' : 'bg-brand-cyan text-black')));
                 const addBtnClass = isSliv
                     ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white'
                     : (isGen ? 'bg-gradient-to-r from-yellow-300 to-amber-500 text-black' : (isRetailView ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-black' : (isParts ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black' : 'bg-gradient-to-r from-brand-cyan to-blue-600 text-black')));
                 const priceLabel = ask ? 'По запросу' : (primaryPrice.toLocaleString('ru-RU') + ' ₽');
-                const stockLabel = ask ? 'по запросу' : (isLowStock ? '' : (p.stock + ' шт'));
 
                 container.innerHTML += `
                     <div class="hud-card rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 hover:translate-y-[-2px] relative group ${isHit ? 'specular-sheen tech-border-cyan' : ''}">
@@ -6579,8 +6590,9 @@
                         </div>
 
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
-                            <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
-                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.style.opacity='0.25'">
+                            <!-- БЕЛЫЙ СТУДИЙНЫЙ ФОН И ПОЛНОЕ ОТОБРАЖЕНИЕ БЕЗ ОБРЕЗКИ -->
+                            <div class="relative w-full aspect-[4/3] bg-white rounded-t-2xl overflow-hidden p-2.5 flex items-center justify-center">
+                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300" onerror="this.style.opacity='0.25'">
                                 <span class="absolute top-2.5 left-2.5 ${badgeClass} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
                                     ${badgeText}
                                 </span>
@@ -6617,9 +6629,9 @@
                                     <span class="text-[10px] font-mono opacity-80">(1 шт)</span>
                                    </button>`
                                 : `<div class="flex items-center justify-between hud-glass border border-brand-cyan/40 rounded-xl p-1">
-                                    <button onclick="updateCart('${p.id}', ${qty - boxQty})" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-brand-cyan active:scale-90">-</button>
+                                    <button onclick="updateCart('${p.id}',${qty - boxQty})" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-brand-cyan active:scale-90">-</button>
                                     <span class="text-xs font-mono font-bold text-white">${qty} шт</span>
-                                    <button onclick="updateCart('${p.id}', ${qty + boxQty}); triggerFlyToCartAnimation(this);" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-brand-cyan active:scale-90">+</button>
+                                    <button onclick="updateCart('${p.id}',${qty + boxQty}); triggerFlyToCartAnimation(this);" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-black text-brand-cyan active:scale-90">+</button>
                                    </div>`
                             }
                         </div>
@@ -7457,6 +7469,20 @@
 
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
 
+        const CACHE_KEY = "azarek_catalog_cache_v3";
+
+        // 1. Мгновенно подтягиваем кэш при входе — 0 секунд задержки!
+        try {
+            const cachedCatalog = localStorage.getItem(CACHE_KEY);
+            if (cachedCatalog) {
+                const parsed = JSON.parse(cachedCatalog);
+                if (Array.isArray(parsed) && parsed.length > 5) {
+                    allProductsData = parsed;
+                }
+            }
+        } catch(e) {}
+
+        // 2. Фоновая умная синхронизация: обновляет данные, не ломая розницу и визуал
         async function syncWithGoogleSheet() {
             try {
                 const res = await fetch(GOOGLE_SHEET_API);
@@ -7467,26 +7493,49 @@
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     const partsItems = allProductsData.filter(p => p.channel === 'parts');
                     const genItems = allProductsData.filter(p => p.channel === 'gen');
+                    
                     const sheetItems = sheetData.map(function (p, idx) {
                         const item = Object.assign({}, p);
                         if (!item.channel) item.channel = 'main';
                         if (!item.images && item.img) item.images = [item.img];
                         if (!item.title) item.title = item.name || item.model || item.product || '';
                         if (!item.id) item.id = 'az_row_' + (p.row || idx);
+
+                        const existing = allProductsData.find(local => local.id === item.id || local.title === item.title);
+                        const optPrice = Number(p.price || existing?.tiers?.[0]?.price || existing?.price || 1000);
+                        const retPrice = Number(existing?.price && existing.price > optPrice ? existing.price : (p.retail || Math.round(optPrice * 1.25 / 50) * 50));
+
+                        item.price = retPrice;
+                        item.tiers = [{ min: 1, price: optPrice, label: 'Опт от 1 шт' }];
+                        item.wb_price = Number(existing?.wb_price || p.wb_price || Math.round(optPrice * 1.08));
+
+                        if (existing && existing.badge && existing.badge.length < 15) {
+                            item.badge = existing.badge;
+                        } else if (!item.badge || item.badge.length > 15 || item.badge === item.cat) {
+                            item.badge = 'ХИТ';
+                        }
                         return item;
                     });
+
                     allProductsData = [...sheetItems, ...partsItems, ...slivItems, ...genItems];
+                    
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(allProductsData));
+                    } catch(e) {}
+
                     renderSubcategoryPills();
                     filterProducts();
-                    console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
                 }
             } catch(e) {
                 console.warn("Загрузка из таблицы не удалась, используется локальный кэш:", e);
             }
         }
 
-        syncWithGoogleSheet();
+        // Показываем каталог сразу в первую же миллисекунду
         switchChannel('main');
+        // Обновляем данные на фоне без мигания
+        syncWithGoogleSheet();
+
     </script>
 </body>
 </html>
