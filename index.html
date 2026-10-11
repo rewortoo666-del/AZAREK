@@ -241,12 +241,16 @@
             transform: translate(-50%, 50%);
         }
 
-        /* Mild sharpen for product photos – clearer on mobile, no resolution change */
+        /* Max sharpness on mobile / Telegram WebApp (Retina) */
         #products-container img,
         #modal-main-img,
         #lightbox-img {
-            filter: contrast(1.02);
             image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            filter: contrast(1.12) saturate(1.05) brightness(1.02);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
         }
     </style>
 </head>
@@ -6580,7 +6584,7 @@
 
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
                             <div class="relative w-full aspect-[4/3] bg-white overflow-hidden p-2.5 flex items-center justify-center">
-                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300" onerror="this.style.opacity='0.25'">
+                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-[1.03] transition duration-300" onerror="this.style.opacity='0.25'">
                                 <span class="absolute top-2.5 left-2.5 ${badgeClass} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
                                     ${badgeText}
                                 </span>
