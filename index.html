@@ -245,9 +245,9 @@
         #products-container img,
         #modal-main-img,
         #lightbox-img {
-            filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
-            -webkit-filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
-        }
+         filter: contrast(1.02);
+        image-rendering: -webkit-optimize-contrast;
+       }
     </style>
 </head>
 <body class="flex justify-center min-h-screen antialiased pb-32 selection:bg-brand-cyan selection:text-black">
@@ -6515,8 +6515,8 @@
                 const safeCat = String(cat).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 return `
                     <button type="button" onclick="setSubCategory('${safeCat}')" class="hud-card rounded-2xl overflow-hidden text-left border border-amber-400/25 active:scale-[0.98] transition">
-                        <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
-                            ${img ? `<img src="${img}" alt="${cat}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.opacity='0.2'">` : ''}
+                        <div class="relative w-full aspect-[4/3] bg-white overflow-hidden p-2.5 flex items-center justify-center">
+                         <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300" onerror="this.style.opacity='0.25'">
                             <span class="absolute top-2.5 left-2.5 bg-amber-400 text-black font-black text-[9px] px-2 py-0.5 rounded-md font-mono">АВТО</span>
                         </div>
                         <div class="p-3">
