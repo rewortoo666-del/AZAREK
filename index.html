@@ -6550,8 +6550,14 @@
                 const rawImg = (p.images && p.images[0]) ? p.images[0] : '';
                 const moq = 1;
                 const boxQty = Number(p.box_qty) || 1;
-                const retailPrice = getRetailPrice(p);
                 const tierPrice = getWholesalePrice(p, 1);
+                let baseRetail = getRetailPrice(p);
+
+                // ЖЕЛЕЗНАЯ ЗАЩИТА: если из таблицы пришла только одна цена и розница равна опту —
+                // автоматически восстанавливаем розничную цену (+35% с красивым округлением)
+                const retailPrice = (baseRetail && baseRetail > tierPrice)
+                    ? baseRetail
+                    : Math.round((tierPrice * 1.35) / 50) * 50;
 
                 const wbPrice = Number(p.wb_price) || Math.round(tierPrice * 1.8);
                 const marginPercent = tierPrice > 0 ? Math.round(((wbPrice - tierPrice) / tierPrice) * 100) : 0;
@@ -7469,6 +7475,20 @@
 
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
 
+        const CACHE_KEY = "azarek_catalog_cache_v4";
+
+        // 1. МГНОВЕННЫЙ СТАРТ (0 секунд): подтягиваем кэш с четкими фотками сразу при открытии
+        try {
+            const cachedCatalog = localStorage.getItem(CACHE_KEY);
+            if (cachedCatalog) {
+                const parsed = JSON.parse(cachedCatalog);
+                if (Array.isArray(parsed) && parsed.length > 5) {
+                    allProductsData = parsed;
+                }
+            }
+        } catch(e) {}
+
+        // 2. Фоновое обновление из таблицы: обновляет фотки и остатки, НЕ ломая розницу
         async function syncWithGoogleSheet() {
             try {
                 const res = await fetch(GOOGLE_SHEET_API);
@@ -7479,15 +7499,46 @@
                     const slivItems = allProductsData.filter(p => p.channel === 'sliv');
                     const partsItems = allProductsData.filter(p => p.channel === 'parts');
                     const genItems = allProductsData.filter(p => p.channel === 'gen');
+
                     const sheetItems = sheetData.map(function (p, idx) {
                         const item = Object.assign({}, p);
                         if (!item.channel) item.channel = 'main';
                         if (!item.images && item.img) item.images = [item.img];
                         if (!item.title) item.title = item.name || item.model || item.product || '';
                         if (!item.id) item.id = 'az_row_' + (p.row || idx);
+
+                        // Находим существующий товар из локального каталога
+                        const existing = allProductsData.find(local => 
+                            local.id === item.id || 
+                            (local.title && item.title && local.title.toLowerCase().trim() === item.title.toLowerCase().trim())
+                        );
+
+                        const optPrice = Number(p.price || existing?.tiers?.[0]?.price || existing?.price || 1000);
+                        
+                        // Сохраняем розницу из исходного товара или считаем нормальную розницу
+                        let retPrice = Number(existing?.price && existing.price > optPrice 
+                            ? existing.price 
+                            : (p.retail || Math.round((optPrice * 1.35) / 50) * 50));
+
+                        item.price = retPrice;
+                        item.tiers = existing?.tiers && existing.tiers.length > 0 
+                            ? existing.tiers.map(t => ({ ...t, price: t.min === 1 ? optPrice : t.price }))
+                            : [{ min: 1, price: optPrice, label: 'Опт от 1 шт' }];
+
+                        item.wb_price = Number(existing?.wb_price || p.wb_price || Math.round(optPrice * 1.08));
+
+                        if (existing && existing.badge) item.badge = existing.badge;
+
                         return item;
                     });
+
                     allProductsData = [...sheetItems, ...partsItems, ...slivItems, ...genItems];
+
+                    // Сохраняем в память телефона, чтобы следующий вход был мгновенным
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(allProductsData));
+                    } catch(e) {}
+
                     renderSubcategoryPills();
                     filterProducts();
                     console.log("Каталог AZAREK успешно синхронизирован с Google Таблицей!");
@@ -7497,8 +7548,11 @@
             }
         }
 
-        syncWithGoogleSheet();
+        // Показываем каталог СРАЗУ в первую же миллисекунду
         switchChannel('main');
+        // Обновляем остатки на фоне без зависания интерфейса
+        syncWithGoogleSheet();
+
     </script>
 </body>
 </html>
