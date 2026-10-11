@@ -6175,7 +6175,77 @@
                     { min: 1, price: 1300, label: 'Спеццена' }
                 ]
             }
-        ];
+        ,
+
+            // === NEW: Шуруповерт щеточный DeWalt с набором ===
+            {
+                id: 'az_drill_dewalt_brush_kit',
+                title: 'Шуруповерт щеточный DeWalt с набором',
+                cat: 'ШУРУПОВЕРТЫ',
+                channel: 'main',
+                badge: 'ХИТ',
+                stock: 80,
+                price: 1300,
+                wb_price: 1200,
+                images: ['https://i.postimg.cc/sgn4f4wF/photo-2026-09-29-16-24-46.jpg'],
+                desc: 'Цвет DeWalt. Щеточный шуруповерт в комплекте с набором бит/оснастки. Опт от 10 шт.',
+                tiers: [
+                    { min: 10, price: 1000, label: 'Опт от 10 шт' },
+                    { min: 100, price: 900, label: 'Опт от 100 шт' },
+                    { min: 500, price: 860, label: 'Опт от 500 шт' }
+                ]
+            },
+            // === NEW: Аккумуляторный снегоуборщик ===
+            {
+                id: 'az_snow_blower_akk',
+                title: 'Аккумуляторный снегоуборщик премиум',
+                cat: 'САД / СНЕГ',
+                channel: 'main',
+                badge: 'ХИТ',
+                stock: 40,
+                price: 5900,
+                wb_price: 5200,
+                images: ['https://i.postimg.cc/FzQjCWsp/photo-2026-10-01-13-45-41.jpg'],
+                desc: 'Бесщёточный двигатель, медная обмотка. Тихо, без бензина и выхлопов. Для дома, гаража, участка. Качество премиум.',
+                tiers: [
+                    { min: 8, price: 4700, label: 'Опт от 8 шт' },
+                    { min: 100, price: 4500, label: 'Опт от 100 шт' }
+                ]
+            },
+            // === NEW: Снегоуборочная машина щёточная ===
+            {
+                id: 'az_snow_brush_machine',
+                title: 'Снегоуборочная машина — щёточная',
+                cat: 'САД / СНЕГ',
+                channel: 'main',
+                badge: 'ХИТ',
+                stock: 30,
+                price: 4500,
+                wb_price: 3900,
+                images: ['https://i.postimg.cc/sg05CDgv/photo-2026-10-05-14-39-54.jpg'],
+                desc: 'Щёточная снегоуборочная машина. Опт от 4 шт.',
+                tiers: [
+                    { min: 4, price: 3500, label: 'Опт от 4 шт' }
+                ]
+            },
+            // === NEW: Tarsdak 2400 Вт (also in gen) ===
+            {
+                id: 'az_gen_tarsdak_2400',
+                title: 'Tarsdak 2400 Вт / 1920 Вт·ч',
+                cat: 'TARSDAK',
+                channel: 'gen',
+                badge: 'ХИТ',
+                stock: 15,
+                price: 78000,
+                wb_price: 61000,
+                priceOnRequest: false,
+                images: ['https://i.postimg.cc/X7tnRR03/Portativnaa-elektrostancia-v-neonovom-garaze.png'],
+                desc: 'Ёмкость 1920 Вт·ч, номинал 2400 Вт, пик 4000 Вт. 4 розетки 230 В + USB-A/USB-C. Солнечная зарядка до 500 Вт. Выход 12 В, LED-подсветка. Дом, дача, гараж.',
+                tiers: [
+                    { min: 1, price: 60000, label: 'Опт от 1 шт' }
+                ]
+            },
+];
 
         let currentChannel = 'main';
         let currentSubCat = 'all';
