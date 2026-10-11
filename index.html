@@ -7458,8 +7458,9 @@
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
 
         async function syncWithGoogleSheet() {
-            try {
-                const res = await fetch(GOOGLE_SHEET_API);
+         return; // отключили синхронизацию с таблицей
+         try {
+          const res = await fetch(GOOGLE_SHEET_API);
                 if (!res.ok) return;
                 const sheetData = await res.json();
         
