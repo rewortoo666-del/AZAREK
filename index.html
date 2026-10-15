@@ -241,12 +241,20 @@
             transform: translate(-50%, 50%);
         }
 
-        /* Mild sharpen for product photos – clearer on mobile, no resolution change */
+        /* Резкость на Retina / Telegram WebApp — без мыла */
         #products-container img,
         #modal-main-img,
         #lightbox-img {
-            filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
-            -webkit-filter: contrast(1.04) saturate(1.03) url(#az-sharpen);
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            filter: contrast(1.08) saturate(1.06);
+            -webkit-filter: contrast(1.08) saturate(1.06);
+            -webkit-font-smoothing: antialiased;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+        #products-container img {
+            will-change: transform;
         }
     </style>
 </head>
@@ -6616,6 +6624,7 @@
                 const isFav = favorites.includes(p.id);
 
                 const rawImg = (p.images && p.images[0]) ? p.images[0] : '';
+                const fbImg = p.imgFallback || '';
                 const moq = 1;
                 const boxQty = Number(p.box_qty) || 1;
                 const retailPrice = getRetailPrice(p);
@@ -6648,7 +6657,7 @@
 
                         <div onclick="openProductModal('${p.id}')" class="cursor-pointer">
                             <div class="relative w-full aspect-[4/3] ${isParts || isGen ? 'bg-slate-900' : 'bg-white p-2.5 flex items-center justify-center'} rounded-t-2xl overflow-hidden">
-                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full ${isParts || isGen ? 'object-cover' : 'object-contain'} group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg';this.style.opacity='0.4'">
+                                <img src="${rawImg}" alt="${p.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full ${isParts || isGen ? 'object-cover' : 'object-contain'} group-hover:scale-105 transition duration-300" data-fb="${fbImg}" onerror="(function(el){var f=el.getAttribute('data-fb');if(f&&el.src!==f){el.onerror=function(){el.onerror=null;el.src='https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg';el.style.opacity='0.45';};el.src=f;}else{el.onerror=null;el.src='https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg';el.style.opacity='0.45';}})(this)">
                                 <span class="absolute top-2.5 left-2.5 ${badgeClass} font-black text-[9px] px-2 py-0.5 rounded-md font-mono tracking-wider shadow-md">
                                     ${badgeText}
                                 </span>
@@ -6916,7 +6925,21 @@
 
             document.getElementById('modal-badge').innerText = p.badge || (isSliv ? '🔥 СЛИВ' : (currentChannel === 'retail' ? '🛒 РОЗНИЦА' : '📦 ОПТ'));
             document.getElementById('modal-stock-text').innerText = `Склад: ${p.stock || 0} шт`;
-            document.getElementById('modal-main-img').src = (p.images && p.images[0]) ? p.images[0] : '';
+            (function(){
+                const m = document.getElementById('modal-main-img');
+                const primary = (p.images && p.images[0]) ? p.images[0] : '';
+                const fb = p.imgFallback || '';
+                m.onerror = function() {
+                    if (fb && m.src !== fb) {
+                        m.onerror = function(){ m.onerror=null; m.src='https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg'; };
+                        m.src = fb;
+                    } else {
+                        m.onerror = null;
+                        m.src = 'https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg';
+                    }
+                };
+                m.src = primary || fb || 'https://i.postimg.cc/sgMXMksH/photo-2022-11-28-08-56-13.jpg';
+            })();
             const imgWrap = document.getElementById('modal-img-wrap');
             const modalImgEl = document.getElementById('modal-main-img');
             if (imgWrap && modalImgEl) {
@@ -7547,12 +7570,18 @@
         attachSwipeToDismiss('checkout-sheet', hideCheckout);
 
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxD87saolSakvWH_LhyQV_CQLQJ8VGXdrhJeXpx9tfvjVTYRMHtNYgWoEgUbv6z4WUlTQ/exec";
-        const CACHE_KEY = "azarek_fast_catalog_cache_v7";
+        const CACHE_KEY = "azarek_fast_catalog_cache_v9";
 
-        // Снимок gen / авто / слив из кода — никогда не пропадают
+        // Снимок gen / авто / слив + студийные фото main (postimg) для fallback
         const HARDCODED_PARTS = allProductsData.filter(p => p.channel === 'parts').map(p => Object.assign({}, p));
         const HARDCODED_GEN   = allProductsData.filter(p => p.channel === 'gen').map(p => Object.assign({}, p));
         const HARDCODED_SLIV  = allProductsData.filter(p => p.channel === 'sliv').map(p => Object.assign({}, p));
+        const STUDIO_BY_TITLE = {};
+        allProductsData.forEach(function (p) {
+            if (p.channel === 'main' && p.images && p.images[0] && String(p.images[0]).includes('postimg')) {
+                STUDIO_BY_TITLE[(p.title || '').toLowerCase().trim()] = p.images[0];
+            }
+        });
 
         try {
             const cachedCatalog = localStorage.getItem(CACHE_KEY);
@@ -7607,18 +7636,24 @@
                         item.wb_price = Number(existing?.wb_price || p.wb_price || Math.round(optPrice * 1.15));
                         if (existing?.badge) item.badge = existing.badge;
 
-                        // ФОТО: никогда не берём битые googleusercontent/sheetsz — оставляем студийные postimg
+                        // ФОТО: Sheet оставляем; postimg — fallback если в TG не откроется
                         const sheetImg = (item.images && item.images[0]) ? String(item.images[0]) : '';
-                        const isBadSheetImg = !sheetImg
-                            || sheetImg.includes('googleusercontent.com')
-                            || sheetImg.includes('sheetsz/')
-                            || sheetImg.includes('google.com/chart');
-                        if (existing?.images && existing.images[0] && isBadSheetImg) {
-                            item.images = existing.images;
-                        } else if (existing?.images && existing.images[0] && sheetImg && !sheetImg.includes('postimg')) {
-                            // если в таблице не postimg — тоже предпочитаем локальное студийное
-                            item.images = existing.images;
+                        let studioImg = '';
+                        if (existing?.images && existing.images[0] && String(existing.images[0]).includes('postimg')) {
+                            studioImg = String(existing.images[0]);
+                        } else if (existing?.imgFallback) {
+                            studioImg = String(existing.imgFallback);
+                        } else {
+                            const key = (item.title || '').toLowerCase().trim();
+                            if (STUDIO_BY_TITLE[key]) studioImg = STUDIO_BY_TITLE[key];
                         }
+                        if (sheetImg) {
+                            item.images = [sheetImg];
+                            if (studioImg && studioImg !== sheetImg) item.imgFallback = studioImg;
+                        } else if (studioImg) {
+                            item.images = [studioImg];
+                        }
+                        if (!item.imgFallback && existing?.imgFallback) item.imgFallback = existing.imgFallback;
 
                         return item;
                     });
@@ -7633,6 +7668,20 @@
                     renderSubcategoryPills();
                     filterProducts();
                     console.log("Каталог OK. Gen/Авто/Слив:", HARDCODED_GEN.length, HARDCODED_PARTS.length, HARDCODED_SLIV.length);
+                    // Принудительно подгружаем фото и обновляем витрину — «скачок» чёткости как раньше
+                    requestAnimationFrame(function () {
+                        document.querySelectorAll("#products-container img").forEach(function (img) {
+                            if (!img.src) return;
+                            const warm = new Image();
+                            warm.decoding = "sync";
+                            warm.src = img.src;
+                            warm.onload = function () {
+                                img.src = warm.src;
+                                img.style.filter = "contrast(1.1) saturate(1.08)";
+                            };
+                        });
+                        filterProducts();
+                    });
                 }
             } catch(e) {
                 console.warn("Синхронизация не удалась:", e);
